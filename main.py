@@ -126,26 +126,8 @@ async def chek_message(message):
             await Artur(bot, message, b)
 
 
-@dp.message(Command(commands='help'))
-async def help(message):
-    await bot.send_message(message.chat.id, (f'Основные команды поддерживаемые ботом:\n'
-                                             f'/start - инициализация бота,\n'
-                                             f'/help - справка по боту,\n'
-                                             f'/func - вызов функциональной клавиатуры бота.\n\n'
-                                             f'Для вызова Давинчи необходимо указать имя в сообщении.\n\n'
-                                             f'Для перевода голосового сообщения(длительность до 1 мин.) в текст '
-                                             f'ответьте на него словом "давинчи" или перешлите голосовое сообщение '
-                                             f'в личку боту.\n\n'))
-
-
-@dp.message(Command(commands='func'))
-async def functions(message):
-    await bot.send_message(message.chat.id, 'Функции бота..', reply_markup=kb1)
-
-
 @dp.message(F.voice, F.chat.type == 'private')
 async def chek_message(v):
-    await bot.send_message(v.chat.id, 'test')
     await save_audio(bot, v)
 
 
