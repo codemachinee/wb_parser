@@ -4,7 +4,7 @@ from openpyxl import load_workbook
 import gspread
 
 
-def data_to_exel(file_name, headers, data, headers_rus=None):
+async def data_to_exel(file_name, headers, data, headers_rus=None):
     wb = load_workbook(file_name)
     ws = wb.active
     # print(wb.sheetnames)
