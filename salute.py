@@ -39,19 +39,11 @@ async def save_audio(bot, message):
     with open(f'{file_id}', 'rb') as audio_file:
         response = requests.post(url, headers=headers, data=audio_file, verify=False)
         try:
-            await bot.send_message(message.chat.id, f'{" ".join(response.json()["result"])}')
-            if response.json()["emotions"][0]['negative'] == max(response.json()["emotions"][0]['negative'],
-                                                                 response.json()["emotions"][0]['neutral'],
-                                                                 response.json()["emotions"][0]['positive']):
-                await bot.send_message(message.chat.id, f'произнес как злая истеричная сучка')
-            elif response.json()["emotions"][0]['positive'] == max(response.json()["emotions"][0]['negative'],
-                                                                   response.json()["emotions"][0]['neutral'],
-                                                                   response.json()["emotions"][0]['positive']):
-                await bot.send_message(message.chat.id, f'произнес так жизнерадостно, что аж бесит')
-            else:
-                await bot.send_message(message.chat.id, f'произнес нормально, не докопаться')
+            await bot.send_message(message.chat.id, f'{" ".join(response.json()["result"])}',
+                                   message_thread_id=message.message_thread_id)
         except Exception:
-            await bot.send_message(message.chat.id, f'Ошибка. Логи:{response.json()}')
+            await bot.send_message(message.chat.id, f'Ошибка. Логи:{response.json()}',
+                                   message_thread_id=message.message_thread_id)
         audio_file.close()
         os.remove(f"{file_id}")
 
@@ -61,7 +53,7 @@ async def Artur(bot, message, text):
     saved_message_salute.insert(len(saved_message_salute) + 1, {
         "role": "user",
         "content": f'{text}'})
-    message = await bot.send_message(message.chat.id, f'секунду..')
+    message = await bot.send_message(message.chat.id, f'секунду..', message_thread_id=message.message_thread_id)
     url = 'https://gigachat.devices.sberbank.ru/api/v1/chat/completions'
     headers = {
         'Content-Type': 'application/json',
@@ -75,9 +67,9 @@ async def Artur(bot, message, text):
     data['messages'] = [
     {
         "role": "system",
-        "content": f"Ты Давинчи - миллиардер и фалантроп, который заработал свое состояние занимаясь онлайн продажами "
-                   f"различных товаров на маркетплейсах. Ты гуру маркетинга и e-commerce, знаешь все про успех в этой"
-                   f"сфере и рад поделиться со всеми своими знаниями с начинающими ребятами. Ты с радостью помогаешь с"
+        "content": f"Ты Давинчи - ты обучающий бот-помощник, который помогает добиться успеха в онлайн продажах "
+                   f"различных товаров на маркетплейсах. Ты гуру маркетинга и e-commerce, знаешь все тонкости этой"
+                   f"сферы и рад поделиться всеми своими знаниями с начинающими ребятами. Ты с радостью помогаешь с"
                    f"любыми вопросами и даешь развернутый ответ, а также даешь настрой и мотивацию продолжать заниматься."
                    f"торговлей на маркетплейсах. Твоя цель, помочь новичкам не совершить типичные "
                    f"ошибки в сфере маркетинга и указать на максимально короткий путь по достижению богатства."
@@ -119,5 +111,5 @@ async def Artur(bot, message, text):
             del saved_message_salute[0:5]
     except Exception:
         await bot.send_message(message.chat.id, f"Ошибка\n"
-                                                     f"Логи:{response.text}")
+                                                     f"Логи:{response.text}", message_thread_id=message.message_thread_id)
         del saved_message_salute[-1]

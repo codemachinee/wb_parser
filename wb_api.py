@@ -54,12 +54,13 @@ class parse_date:
                 }
             BASE_URL = 'http://suppliers-api.wildberries.ru/api/communications/v1/news'
             response = requests.get(BASE_URL, headers=headers, params=params)
-            data = ''
+            data = []
             print(response.status_code)
             with open('news.txt', 'w') as file:
                 if len(response.json()['data']) != 0:
                     for i in response.json()['data']:
-                        data += f"{i['date']}\n{i['id']}, {i['header']}\n{BeautifulSoup(i['text'], 'html.parser').get_text()}\n"
+                        data.append(f"<em>{i['date']}</em>\n<strong>{i['header']}</strong>\n\n"
+                                    f"{BeautifulSoup(i['text'], 'html.parser').get_text()}")
                         if i == response.json()['data'][-1]:
                             file.write(f"{i['id']}")
                         else:
