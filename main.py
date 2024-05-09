@@ -1,13 +1,15 @@
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.types import CallbackQuery, FSInputFile
+from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, FSInputFile, Message
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from wb_api import *
 from keyboards import *
 from salute import *
-
-token = lemonade
-# token = codemashine_test
+from FSM import step_message
+from google_sheets import *
+# token = lemonade
+token = codemashine_test
 
 bot = Bot(token=token)
 dp = Dispatcher()
@@ -15,22 +17,37 @@ dp = Dispatcher()
 
 @dp.message(Command(commands='start'))
 async def start(message):
-    await bot.send_message(message.chat.id, '''Бот уже инициализирован.
-Новости присылаются ежедневно в 11:00 по московскому времени
-
-/help - справка по боту''', message_thread_id=message.message_thread_id)
+    if message.chat.id in admins_list:
+        await bot.send_message(message.chat.id, f'Бот-поддержки продаж инициализирован.\n'
+                               f'Режим доступа: Администратор\n'
+                               f'/help - справка по боту', message_thread_id=message.message_thread_id)
+    else:
+        await bot.send_message(message.chat.id, f'Здравствуйте {message.from_user.first_name}!\n'
+                               f'Бот-поддержки клиентов инициализирован.\n'
+                               f'/help - справка по боту', message_thread_id=message.message_thread_id)
+        await bot.send_message(message.chat.id, f'Пожалуйста выберите интересующий товар:',
+                               message_thread_id=message.message_thread_id, reply_markup=kb_choice_tovar)
 
 
 @dp.message(Command(commands='help'))
 async def help(message):
-    await bot.send_message(message.chat.id, (f'Основные команды поддерживаемые ботом:\n'
-                                             f'/start - инициализация бота,\n'
-                                             f'/help - справка по боту,\n'
-                                             f'/func - вызов функциональной клавиатуры бота.\n\n'
-                                             f'Для вызова Давинчи необходимо указать имя в сообщении.\n\n'
-                                             f'Для перевода голосового сообщения(длительность до 1 мин.) в текст '
-                                             f'ответьте на него словом "давинчи" или перешлите голосовое сообщение '
-                                             f'в личку боту.\n\n'), message_thread_id=message.message_thread_id)
+    if message.chat.id in admins_list:
+        await bot.send_message(message.chat.id, (f'Основные команды поддерживаемые ботом:\n'
+                                                 f'/start - инициализация бота,\n'
+                                                 f'/help - справка по боту,\n'
+                                                 f'/func - вызов функциональной клавиатуры бота.\n'
+                                                 f'/sent_message - cделать рассылку по клиентской базе.\n'
+                                                 f'Для вызова Давинчи необходимо указать имя в сообщении.\n\n'
+                                                 f'Для перевода голосового сообщения(длительность до 1 мин.) в текст '
+                                                 f'ответьте на него словом "давинчи" или перешлите голосовое сообщение '
+                                                 f'в личку боту.\n\n'), message_thread_id=message.message_thread_id)
+    else:
+        await bot.send_message(message.chat.id, f'Бот служит для автоматизации процессса обработки клиентских '
+                               f'обращений по проблемным и иным вопросам.\n'
+                               f'Список команд:\n'
+                               f'/start - инициализация бота,\n'
+                               f'/help - справка по боту.\n\n'
+                               f'Разработка ботов любой сложности @hlapps', message_thread_id=message.message_thread_id)
 
 
 # @dp.message(Command(commands='test'))
@@ -40,8 +57,30 @@ async def help(message):
 
 @dp.message(Command(commands='func'))
 async def functions(message):
-    await bot.send_message(message.chat.id, 'Функции бота..', message_thread_id=message.message_thread_id,
-                           reply_markup=kb1,)
+    if message.chat.id in admins_list:
+        await bot.send_message(message.chat.id, 'Выберите функцию:',
+                               message_thread_id=message.message_thread_id, reply_markup=kb1)
+    else:
+        await bot.send_message(message.chat.id, 'Недостаточно прав',
+                               message_thread_id=message.message_thread_id)
+
+
+@dp.message(Command(commands='sent_message'))  # команда для переброски клиента из базы потенциальных клиентов в
+async def sent_message(message, state: FSMContext):  # базу старых клиентов
+    if message.chat.id == admin_id:
+        await bot.send_message(message.chat.id, 'Введите текст сообщения',
+                               message_thread_id=message.message_thread_id,)
+        await state.set_state(step_message.message)
+
+    else:
+        await bot.send_message(message.chat.id, 'Недостаточно прав')
+
+
+@dp.message(step_message.message)
+async def perehvat(message, state: FSMContext):
+    await clients_base(bot, message).rasylka_v_bazu()
+    await Message.answer(message, text='Рассылка осуществлена', show_allert=True)
+    await state.clear()
 
 
 @dp.callback_query(F.data)
@@ -49,7 +88,7 @@ async def check_callback(callback: CallbackQuery):
     if callback.data == 'wb_warehouses':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("список складов wb.xlsx")
+            file_path = FSInputFile("tables/список складов wb.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:
@@ -58,7 +97,7 @@ async def check_callback(callback: CallbackQuery):
     if callback.data == 'my_warehouses':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("список моих складов.xlsx")
+            file_path = FSInputFile("tables/список моих складов.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:
@@ -67,7 +106,7 @@ async def check_callback(callback: CallbackQuery):
     if callback.data == 'goods_list':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("список товаров.xlsx")
+            file_path = FSInputFile("tables/список товаров.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:
@@ -76,7 +115,7 @@ async def check_callback(callback: CallbackQuery):
     if callback.data == 'tariffs_returns':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("Тарифы на возвраты.xlsx")
+            file_path = FSInputFile("tables/Тарифы на возвраты.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:
@@ -85,7 +124,7 @@ async def check_callback(callback: CallbackQuery):
     if callback.data == 'tariffs_box':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("Тарифы на короб.xlsx")
+            file_path = FSInputFile("tables/Тарифы на короб.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:
@@ -94,7 +133,7 @@ async def check_callback(callback: CallbackQuery):
     if callback.data == 'tariffs_pallet':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("Тарифы на монопалет.xlsx")
+            file_path = FSInputFile("tables/Тарифы на монопалет.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:
@@ -103,7 +142,7 @@ async def check_callback(callback: CallbackQuery):
     if callback.data == 'feedbacks':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("report_feedbacks.xlsx")
+            file_path = FSInputFile("tables/report_feedbacks.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:
@@ -112,7 +151,7 @@ async def check_callback(callback: CallbackQuery):
     if callback.data == 'questions':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("report_questions.xlsx")
+            file_path = FSInputFile("tables/report_questions.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:
@@ -121,7 +160,7 @@ async def check_callback(callback: CallbackQuery):
     if callback.data == 'suplier_list':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("Отчет о поставках.xlsx")
+            file_path = FSInputFile("tables/Отчет о поставках.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:

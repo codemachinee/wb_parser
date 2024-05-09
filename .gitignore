@@ -3,12 +3,12 @@ passwords.py
 pidor-of-the-day-af3dd140b860.json
 pidor-of-the-day-5880592e7067.json
 Рассчет экономики.xlsx
-Отчет о поставках.xlsx
-report_feedbacks.xlsx
-список моих складов.xlsx
-список складов wb.xlsx
-список товаров.xlsx
-Тарифы на возвраты.xlsx
-Тарифы на короб.xlsx
-Тарифы на монопалет.xlsx
-report_questions.xlsx
+tables/Отчет о поставках.xlsx
+tables/report_feedbacks.xlsx
+tables/список моих складов.xlsx
+tables/список складов wb.xlsx
+tables/список товаров.xlsx
+tables/Тарифы на возвраты.xlsx
+tables/Тарифы на короб.xlsx
+tables/Тарифы на монопалет.xlsx
+tables/report_questions.xlsx
