@@ -99,7 +99,7 @@ async def callbacks(bot, callback):
         await bot.send_message(callback.message.chat.id, f'Пожалуйста опишите подробнее свою ситуацию, прикрепите в '
                                                          f'сообщение фото, видео (при их наличии).\n\n'
                                                          f'Постарайтесь уместить все в одном сообщении. В конце укажите'
-                                                         f'свой номер телефона или ссылку на аккаунт в телеграм, чтобы'
+                                                         f'свой номер телефона или ссылку на аккаунт в телеграм, чтобы '
                                                          f'с Вами связался специалист.',
                                message_thread_id=callback.message.message_thread_id)
         if database().search_in_table(callback.message.chat.id) is not False:

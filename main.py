@@ -3,6 +3,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, FSInputFile, Message
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import math
 from wb_api import *
 from keyboards import *
 from salute import *
@@ -202,28 +203,33 @@ async def chek_message(message):
                                                                      1).replace('давинчи,', '',
                                                                                 1).replace(' давинчи', '', 1)
             await Artur(bot, message, b)
-    elif message.chat.type == "private" and message.chat.id not in admins_list:
+    elif message.chat.id not in admins_list:
         data_from_database = database().search_in_table(message.chat.id)
         if data_from_database is not False:
+            mes = await bot.send_message(message.chat.id, 'Пробиваю базу..⏳')
             database().update_table(telegram_id=message.chat.id, update_reason_text=message.text)
             try:
-                await clients_base(bot, message, data_from_database[1]).chec_and_record(data_from_database[2],
+                await clients_base(bot, message, data_from_database[0][1]).chec_and_record(data_from_database[0][2],
                                                                                         message.text)
                 await bot.send_message(group_id, f'🚨!!!СРОЧНО!!!🚨\n'
                                                  f'Поступило  ОБРАЩЕНИЕ от:\n'
                                                  f'Ссылка: @{message.from_user.username}\n'
                                                  f'id чата: {message.chat.id}\n'
-                                                 f'Товар: {data_from_database[1]}\n'
-                                                 f'Причина: {data_from_database[2]}\n'
+                                                 f'Товар: {data_from_database[0][1]}\n'
+                                                 f'Причина: {data_from_database[0][2]}\n'
                                                  f'Ссылка на базу: https://docs.google.com/spreadsheets/d/1gPsql3jmemm'
                                                  f'NbUbN0SQ16NTlYF8omWO4dsbRllJBElw/edit#gid=0\n')
 
                 await bot.copy_message(group_id, message.chat.id, message.message_id)
-                await bot.send_message(message.chat.id, f'Спасибо за обращение, с Вами скоро свяжутся.')
+                await bot.edit_message_text(f'Спасибо за обращение, с Вами скоро свяжутся.', message.chat.id,
+                                            mes.message_id)
                 database().delete_user(message.chat.id)
             except Exception as e:
                 await bot.send_message(admin_account, f'Исключение вызванное проблемами подключения к '
                                                       f'гугл-таблице: {e}')
+        else:
+            await bot.send_message(message.chat.id, f'Пожалуйста выберите интересующий товар:',
+                                   message_thread_id=message.message_thread_id, reply_markup=kb_choice_tovar)
 
 
 @dp.message(F.voice, F.chat.type == 'private')
@@ -238,14 +244,20 @@ async def send_news():
             pass
         else:
             for i in message:
-                if len(i) < 1023:
-                    await bot.send_message(group_id, f'{i}', message_thread_id=343, parse_mode='HTML')
-                else:
-                    with open('news.txt', 'r') as file:
-                        file_id = file.read()
-                    index_end = i.find(f'{str(int(file_id[:4]) - 2)}')
-                    await bot.send_message(group_id, f'{i[:index_end]}', message_thread_id=343, parse_mode='HTML')
-                    await bot.send_message(group_id, f'{i[index_end:]}', message_thread_id=343, parse_mode='HTML')
+                for n in range(0, math.ceil(len(i) / 1020)):
+                    if n == (math.ceil(len(i) / 1020) - 1):
+                        await bot.send_message(group_id, f'{i[n*1020:]}', message_thread_id=343, parse_mode='HTML')
+                    else:
+                        await bot.send_message(group_id, f'{i[n * 1020:(n + 1) * 1020]}', message_thread_id=343,
+                                               parse_mode='HTML')
+                # if len(i) < 1023:
+                #     await bot.send_message(group_id, f'{i}', message_thread_id=343, parse_mode='HTML')
+                # else:
+                #     with open('news.txt', 'r') as file:
+                #         file_id = file.read()
+                #     index_end = i.find(f'{str(int(file_id[:4]) - 2)}')
+                #     await bot.send_message(group_id, f'{i[:index_end]}', message_thread_id=343, parse_mode='HTML')
+                #     await bot.send_message(group_id, f'{i[index_end:]}', message_thread_id=343, parse_mode='HTML')
     except Exception as e:
         await bot.send_message(admin_id, f'Ошибка в фyкции send_news: {e}')
 

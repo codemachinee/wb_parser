@@ -23,16 +23,19 @@ class clients_base:  # класс базы данных
             mes = await self.bot.send_message(admin_account, 'Пробиваю базу..⏳')
             if str(self.message.chat.id) in self.worksheet.col_values(1):
                 await self.bot.edit_message_text('Клиент есть в базе', admin_account, mes.message_id)
+                self.worksheet.update(f'H{self.worksheet.find(str(self.message.chat.id)).row}:'
+                                      f'I{self.worksheet.find(str(self.message.chat.id)).row}', [[reason_text,
+                                                              str(datetime.now().date())]])
             else:
+                self.worksheet.update(f'A{worksheet_len}:I{worksheet_len}', [[self.message.chat.id,
+                                      self.message.from_user.username, self.message.from_user.first_name,
+                                      self.message.from_user.last_name, None, self.tovar_name, reasons, reason_text,
+                                      str(datetime.now().date())]])
                 await self.bot.edit_message_text(f'Клиент добавлен в базу\n'
                                                  f'База: '
                                                  f'https://docs.google.com/spreadsheets/d/1gPsql3jmemmNbUbN0SQ16NTlY'
                                                  f'F8omWO4dsbRllJBElw/edit?usp=sharing',
                                                  admin_account, mes.message_id)
-                self.worksheet.update(f'A{worksheet_len}:I{worksheet_len}', [[self.message.chat.id,
-                                      self.message.from_user.username, self.message.from_user.first_name,
-                                      self.message.from_user.last_name, None, self.tovar_name, reasons, reason_text,
-                                      str(datetime.now().date())]])
         except Exception as e:
             await self.bot.send_message(admin_account, f'Исключение вызванное функцией проверки и записи клиента в '
                                                        f'гугл-таблицу: {e}')
