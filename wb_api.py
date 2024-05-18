@@ -45,6 +45,7 @@ class parse_date:
 
    # ежедневные новости
     async def get_news(self):
+        data = []
         try:
             with open('news.txt', 'r') as file:
                 file_id = file.read()
@@ -54,7 +55,6 @@ class parse_date:
                 }
             BASE_URL = 'http://suppliers-api.wildberries.ru/api/communications/v1/news'
             response = requests.get(BASE_URL, headers=headers, params=params)
-            data = []
             print(response.status_code)
             with open('news.txt', 'w') as file:
                 if len(response.json()['data']) != 0:
@@ -73,7 +73,8 @@ class parse_date:
         except requests.exceptions.JSONDecodeError as e:
             with open('news.txt', 'w') as file:
                 file.write(f"{file_id}")
-            return f'Исключение: {e}'
+                data.append(f'Исключение: {e}')
+            return data
 
     # список складов
     async def get_wb_warehouses(self):

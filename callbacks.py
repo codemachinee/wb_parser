@@ -90,19 +90,93 @@ async def callbacks(bot, callback):
     elif callback.data == 'PREMIATO':
         await bot.send_message(callback.message.chat.id, f'Пожалуйста выберите причину обращения',
                                message_thread_id=callback.message.message_thread_id, reply_markup=kb_choice_reasons)
-        if database().search_in_table(callback.message.chat.id) is True:
-            database().update_table(telegram_id=callback.message.chat.id, update_tovar='Сухой корм Premeato')
+        if await database().search_in_table(callback.message.chat.id) is True:
+            await database().update_table(telegram_id=callback.message.chat.id, update_tovar='Сухой корм Premeato')
         else:
-            database().add_user(update_telegram_id=callback.message.chat.id, update_tovar='Сухой корм Premeato')
+            await database().add_user(update_telegram_id=callback.message.chat.id, update_tovar='Сухой корм Premeato')
 
     elif callback.data == 'package':
         await bot.send_message(callback.message.chat.id, f'Пожалуйста опишите подробнее свою ситуацию, прикрепите в '
                                                          f'сообщение фото, видео (при их наличии).\n\n'
-                                                         f'Постарайтесь уместить все в одном сообщении. В конце укажите'
-                                                         f'свой номер телефона или ссылку на аккаунт в телеграм, чтобы '
-                                                         f'с Вами связался специалист.',
-                               message_thread_id=callback.message.message_thread_id)
-        if database().search_in_table(callback.message.chat.id) is not False:
-            database().update_table(telegram_id=callback.message.chat.id, update_reasons='Проблемы с упаковкой')
+                                                         f'<b>Важно отправить все данные одним сообщением.</b> В конце '
+                                                         f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
+                                                         f'телеграм, чтобы с Вами мог связался специалист.',
+                               message_thread_id=callback.message.message_thread_id, parse_mode='html')
+        if await database().search_in_table(callback.message.chat.id) is not False:
+            await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Проблемы с упаковкой')
         else:
-            database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Проблемы с упаковкой')
+            await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Проблемы с упаковкой')
+
+    elif callback.data == 'wrong_taste':
+        await bot.send_message(callback.message.chat.id, f'Пожалуйста опишите подробнее свою ситуацию, прикрепите в '
+                                                         f'сообщение фото, видео (при их наличии).\n\n'
+                                                         f'<b>Важно отправить все данные одним сообщением.</b> В конце '
+                                                         f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
+                                                         f'телеграм, чтобы с Вами мог связался специалист.',
+                               message_thread_id=callback.message.message_thread_id, parse_mode='html')
+        if await database().search_in_table(callback.message.chat.id) is not False:
+            await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Пришел не тот вкус')
+        else:
+            await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Пришел не тот вкус')
+
+    elif callback.data == 'transfer':
+        await bot.send_message(callback.message.chat.id, f'Пожалуйста опишите подробнее свою ситуацию, прикрепите в '
+                                                         f'сообщение фото, видео (при их наличии).\n\n'
+                                                         f'<b>Важно отправить все данные одним сообщением.</b> В конце '
+                                                         f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
+                                                         f'телеграм, чтобы с Вами мог связался специалист.',
+                               message_thread_id=callback.message.message_thread_id, parse_mode='html')
+        if await database().search_in_table(callback.message.chat.id) is not False:
+            await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Перевод собаки на корм '
+                                                                                               'PREMIATO')
+        else:
+            await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Перевод собаки на '
+                                                                                                  'корм PREMIATO')
+
+    elif callback.data == 'structure':
+        await bot.send_message(callback.message.chat.id, f'Пожалуйста опишите подробнее свою ситуацию, прикрепите в '
+                                                         f'сообщение фото, видео (при их наличии).\n\n'
+                                                         f'<b>Важно отправить все данные одним сообщением.</b> В конце '
+                                                         f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
+                                                         f'телеграм, чтобы с Вами мог связался специалист.',
+                               message_thread_id=callback.message.message_thread_id, parse_mode='html')
+        if await database().search_in_table(callback.message.chat.id) is not False:
+            await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Состав корма')
+        else:
+            await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Состав корма')
+
+    elif callback.data == 'health':
+        await bot.send_message(callback.message.chat.id, f'Пожалуйста опишите подробнее свою ситуацию, прикрепите в '
+                                                         f'сообщение фото, видео (при их наличии).\n\n'
+                                                         f'<b>Важно отправить все данные одним сообщением.</b> В конце '
+                                                         f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
+                                                         f'телеграм, чтобы с Вами мог связался специалист.',
+                               message_thread_id=callback.message.message_thread_id, parse_mode='html')
+        if await database().search_in_table(callback.message.chat.id) is not False:
+            await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Употребление при '
+                                                                                               'проблемах со здоровьем')
+        else:
+            await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Употребление при '
+                                                                                                  'проблемах со '
+                                                                                                  'здоровьем')
+
+    elif callback.data == 'other':
+        await bot.send_message(callback.message.chat.id, f'Пожалуйста опишите подробнее свою ситуацию, прикрепите в '
+                                                         f'сообщение фото, видео (при их наличии).\n\n'
+                                                         f'<b>Важно отправить все данные одним сообщением.</b> В конце '
+                                                         f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
+                                                         f'телеграм, чтобы с Вами мог связался специалист.',
+                               message_thread_id=callback.message.message_thread_id, parse_mode='html')
+        if await database().search_in_table(callback.message.chat.id) is not False:
+            await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Другое')
+        else:
+            await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Другое')
+
+    elif callback.data == 'opt':
+        await bot.send_message(callback.message.chat.id, f'Пожалуйста <b>укажите свой номер телефона или ссылку</b> на '
+                                                         f'аккаунт в телеграм, чтобы с Вами мог связался специалист.',
+                               message_thread_id=callback.message.message_thread_id, parse_mode='html')
+        if await database().search_in_table(callback.message.chat.id) is not False:
+            await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Закупка оптом')
+        else:
+            await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Закупка оптом')

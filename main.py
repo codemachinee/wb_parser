@@ -1,14 +1,11 @@
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, FSInputFile, Message
+from aiogram.types import CallbackQuery
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import math
-from wb_api import *
-from keyboards import *
 from salute import *
 from FSM import step_message
-from google_sheets import *
 from callbacks import *
 # token = lemonade
 token = codemashine_test
@@ -57,11 +54,6 @@ async def help(message):
                                parse_mode='html')
 
 
-# @dp.message(Command(commands='test'))
-# async def help(message):
-#     await bot.send_message(group_id, f'<em>Привет меня зовут Молли</em>', parse_mode='HTML', message_thread_id=2109)
-
-
 @dp.message(Command(commands='func'))
 async def functions(message):
     if message.chat.id in admins_list:
@@ -76,116 +68,28 @@ async def functions(message):
 async def sent_message(message, state: FSMContext):  # базу старых клиентов
     if message.chat.id == admin_id:
         await bot.send_message(message.chat.id, 'Введите текст сообщения',
-                               message_thread_id=message.message_thread_id,)
+                               message_thread_id=message.message_thread_id)
         await state.set_state(step_message.message)
 
     else:
-        await bot.send_message(message.chat.id, 'Недостаточно прав')
+        await bot.send_message(message.chat.id, 'Недостаточно прав', message_thread_id=message.message_thread_id)
 
 
 @dp.message(step_message.message)
 async def perehvat(message, state: FSMContext):
     await clients_base(bot, message).rasylka_v_bazu()
-    await Message.answer(message, text='Рассылка осуществлена', show_allert=True)
     await state.clear()
 
 
 @dp.callback_query(F.data)
 async def check_callback(callback: CallbackQuery):
     await callbacks(bot, callback)
-    # if callback.data == 'wb_warehouses':
-    #     data = await parse_date().get_wb_warehouses()
-    #     if data is None:
-    #         file_path = FSInputFile("tables/список складов wb.xlsx")
-    #         await bot.send_document(callback.message.chat.id, file_path,
-    #                                 message_thread_id=callback.message.message_thread_id)
-    #     else:
-    #         await bot.send_message(callback.message.chat.id, f'Исключение:{data}',
-    #                                message_thread_id=callback.message.message_thread_id)
-    # elif callback.data == 'my_warehouses':
-    #     data = await parse_date().get_wb_warehouses()
-    #     if data is None:
-    #         file_path = FSInputFile("tables/список моих складов.xlsx")
-    #         await bot.send_document(callback.message.chat.id, file_path,
-    #                                 message_thread_id=callback.message.message_thread_id)
-    #     else:
-    #         await bot.send_message(callback.message.chat.id, f'Исключение:{data}',
-    #                                message_thread_id=callback.message.message_thread_id)
-    # elif callback.data == 'goods_list':
-    #     data = await parse_date().get_wb_warehouses()
-    #     if data is None:
-    #         file_path = FSInputFile("tables/список товаров.xlsx")
-    #         await bot.send_document(callback.message.chat.id, file_path,
-    #                                 message_thread_id=callback.message.message_thread_id)
-    #     else:
-    #         await bot.send_message(callback.message.chat.id, f'Исключение:{data}',
-    #                                message_thread_id=callback.message.message_thread_id)
-    # elif callback.data == 'tariffs_returns':
-    #     data = await parse_date().get_wb_warehouses()
-    #     if data is None:
-    #         file_path = FSInputFile("tables/Тарифы на возвраты.xlsx")
-    #         await bot.send_document(callback.message.chat.id, file_path,
-    #                                 message_thread_id=callback.message.message_thread_id)
-    #     else:
-    #         await bot.send_message(callback.message.chat.id, f'Исключение:{data}',
-    #                                message_thread_id=callback.message.message_thread_id)
-    # elif callback.data == 'tariffs_box':
-    #     data = await parse_date().get_wb_warehouses()
-    #     if data is None:
-    #         file_path = FSInputFile("tables/Тарифы на короб.xlsx")
-    #         await bot.send_document(callback.message.chat.id, file_path,
-    #                                 message_thread_id=callback.message.message_thread_id)
-    #     else:
-    #         await bot.send_message(callback.message.chat.id, f'Исключение:{data}',
-    #                                message_thread_id=callback.message.message_thread_id)
-    # elif callback.data == 'tariffs_pallet':
-    #     data = await parse_date().get_wb_warehouses()
-    #     if data is None:
-    #         file_path = FSInputFile("tables/Тарифы на монопалет.xlsx")
-    #         await bot.send_document(callback.message.chat.id, file_path,
-    #                                 message_thread_id=callback.message.message_thread_id)
-    #     else:
-    #         await bot.send_message(callback.message.chat.id, f'Исключение:{data}',
-    #                                message_thread_id=callback.message.message_thread_id)
-    # elif callback.data == 'feedbacks':
-    #     data = await parse_date().get_wb_warehouses()
-    #     if data is None:
-    #         file_path = FSInputFile("tables/report_feedbacks.xlsx")
-    #         await bot.send_document(callback.message.chat.id, file_path,
-    #                                 message_thread_id=callback.message.message_thread_id)
-    #     else:
-    #         await bot.send_message(callback.message.chat.id, f'Исключение:{data}',
-    #                                message_thread_id=callback.message.message_thread_id)
-    # elif callback.data == 'questions':
-    #     data = await parse_date().get_wb_warehouses()
-    #     if data is None:
-    #         file_path = FSInputFile("tables/report_questions.xlsx")
-    #         await bot.send_document(callback.message.chat.id, file_path,
-    #                                 message_thread_id=callback.message.message_thread_id)
-    #     else:
-    #         await bot.send_message(callback.message.chat.id, f'Исключение:{data}',
-    #                                message_thread_id=callback.message.message_thread_id)
-    # elif callback.data == 'suplier_list':
-    #     data = await parse_date().get_wb_warehouses()
-    #     if data is None:
-    #         file_path = FSInputFile("tables/Отчет о поставках.xlsx")
-    #         await bot.send_document(callback.message.chat.id, file_path,
-    #                                 message_thread_id=callback.message.message_thread_id)
-    #     else:
-    #         await bot.send_message(callback.message.chat.id, f'Исключение:{data}',
-    #                                message_thread_id=callback.message.message_thread_id)
-    # elif callback.data == 'PREMIATO':
-    #     await bot.send_message(callback.message.chat.id, f'Пожалуйста выберите причину обращения',
-    #                            message_thread_id=callback.message.message_thread_id, reply_markup=)
 
-
-# @dp.message(F.text)
-# async def chek_message(message):
-#     print(message)
 
 @dp.message(F.text)
+@dp.message(F.chat.type == 'private')
 async def chek_message(message):
-    if 'Давинчи' in message.text:
+    if 'Давинчи' in message.md_text:
         try:
             if message.reply_to_message.voice.file_id:
                 await save_audio(bot, message.reply_to_message)
@@ -194,7 +98,7 @@ async def chek_message(message):
                                                                                              1).replace(
                 ' Давинчи', '', 1)
             await Artur(bot, message, b)
-    elif 'давинчи' in message.text:
+    elif 'давинчи' in message.md_text:
         try:
             if message.reply_to_message.voice.file_id:
                 await save_audio(bot, message.reply_to_message)
@@ -204,13 +108,12 @@ async def chek_message(message):
                                                                                 1).replace(' давинчи', '', 1)
             await Artur(bot, message, b)
     elif message.chat.id not in admins_list:
-        data_from_database = database().search_in_table(message.chat.id)
+        data_from_database = await database().search_in_table(message.chat.id)
         if data_from_database is not False:
-            mes = await bot.send_message(message.chat.id, 'Пробиваю базу..⏳')
-            database().update_table(telegram_id=message.chat.id, update_reason_text=message.text)
+            mes = await bot.send_message(message.chat.id, 'Загрузка..⏳')
             try:
                 await clients_base(bot, message, data_from_database[0][1]).chec_and_record(data_from_database[0][2],
-                                                                                        message.text)
+                                                                                           message.md_text)             # применяем message.md_text, потоому что при отправке текста с картинкой message.text = None
                 await bot.send_message(group_id, f'🚨!!!СРОЧНО!!!🚨\n'
                                                  f'Поступило  ОБРАЩЕНИЕ от:\n'
                                                  f'Ссылка: @{message.from_user.username}\n'
@@ -218,12 +121,12 @@ async def chek_message(message):
                                                  f'Товар: {data_from_database[0][1]}\n'
                                                  f'Причина: {data_from_database[0][2]}\n'
                                                  f'Ссылка на базу: https://docs.google.com/spreadsheets/d/1gPsql3jmemm'
-                                                 f'NbUbN0SQ16NTlYF8omWO4dsbRllJBElw/edit#gid=0\n')
+                                                 f'NbUbN0SQ16NTlYF8omWO4dsbRllJBElw/edit#gid=0\n', message_thread_id=343)
 
-                await bot.copy_message(group_id, message.chat.id, message.message_id)
+                await bot.copy_message(group_id, message.chat.id, message.message_id, message_thread_id=343)
                 await bot.edit_message_text(f'Спасибо за обращение, с Вами скоро свяжутся.', message.chat.id,
                                             mes.message_id)
-                database().delete_user(message.chat.id)
+                await database().delete_user(message.chat.id)
             except Exception as e:
                 await bot.send_message(admin_account, f'Исключение вызванное проблемами подключения к '
                                                       f'гугл-таблице: {e}')
@@ -250,20 +153,12 @@ async def send_news():
                     else:
                         await bot.send_message(group_id, f'{i[n * 1020:(n + 1) * 1020]}', message_thread_id=343,
                                                parse_mode='HTML')
-                # if len(i) < 1023:
-                #     await bot.send_message(group_id, f'{i}', message_thread_id=343, parse_mode='HTML')
-                # else:
-                #     with open('news.txt', 'r') as file:
-                #         file_id = file.read()
-                #     index_end = i.find(f'{str(int(file_id[:4]) - 2)}')
-                #     await bot.send_message(group_id, f'{i[:index_end]}', message_thread_id=343, parse_mode='HTML')
-                #     await bot.send_message(group_id, f'{i[index_end:]}', message_thread_id=343, parse_mode='HTML')
     except Exception as e:
         await bot.send_message(admin_id, f'Ошибка в фyкции send_news: {e}')
 
 
 async def main():
-    # scheduler = AsyncIOScheduler()
+    scheduler = AsyncIOScheduler()
     # scheduler.add_job(pidr, "cron", day_of_week='mon-sun', hour=11)
     # scheduler.add_job(send_news, trigger="interval", hours=3)
     # scheduler.start()

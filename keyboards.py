@@ -22,4 +22,5 @@ kb_choice_reasons = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🐕 Перевод собаки на корм PREMIATO', callback_data='transfer')],
     [InlineKeyboardButton(text='📋 Состав корма', callback_data='structure')],
     [InlineKeyboardButton(text='❗ Употребление при проблемах со здоровьем', callback_data='health')],
+    [InlineKeyboardButton(text='🚚 Закупка оптом', callback_data='opt')],
     [InlineKeyboardButton(text='❓ Другое', callback_data='other')]])

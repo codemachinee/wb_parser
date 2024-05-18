@@ -1,19 +1,10 @@
-import math
+from datetime import datetime
 
+import pytz
 
-def send_news():
-    message = ['await parse_date().get_news()aasffsdfsd', 'await parse_date().get_news()aasffsdfsd']
-    if message is None:
-        pass
-    else:
-        for i in message:
-            for n in range(0, math.ceil(len(i) / 10)):
-                if n == (math.ceil(len(i) / 10) - 1):
-                    print(f'{i[n*10:]}')
+moscow_tz = pytz.timezone('Europe/Moscow')
 
-                else:
-                    print(f'{i[n * 10:(n + 1) * 10]}')
+# Получение текущего времени в московской временной зоне
+moscow_time = datetime.now(moscow_tz).strftime('%d.%m.%y %H:%M')
 
-
-
-send_news()
+print(moscow_time)
