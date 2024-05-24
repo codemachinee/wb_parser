@@ -55,7 +55,6 @@ class parse_date:
                 }
             BASE_URL = 'http://suppliers-api.wildberries.ru/api/communications/v1/news'
             response = requests.get(BASE_URL, headers=headers, params=params)
-            print(response.status_code)
             with open('news.txt', 'w') as file:
                 if len(response.json()['data']) != 0:
                     for i in response.json()['data']:

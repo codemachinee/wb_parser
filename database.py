@@ -37,4 +37,3 @@ class database:
         self.cur.execute(f"DELETE FROM users WHERE telegram_id = ?;", (telegram_id,))
         self.base.commit()
         self.base.close()
-        print(f'пользователь {telegram_id} удален из базы')

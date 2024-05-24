@@ -7,8 +7,8 @@ import math
 from salute import *
 from FSM import step_message
 from callbacks import *
-# token = lemonade
-token = codemashine_test
+token = lemonade
+# token = codemashine_test
 
 bot = Bot(token=token)
 dp = Dispatcher()
@@ -160,8 +160,8 @@ async def send_news():
 async def main():
     scheduler = AsyncIOScheduler()
     # scheduler.add_job(pidr, "cron", day_of_week='mon-sun', hour=11)
-    # scheduler.add_job(send_news, trigger="interval", hours=3)
-    # scheduler.start()
+    scheduler.add_job(send_news, trigger="interval", minutes=20)
+    scheduler.start()
     await dp.start_polling(bot)
 
 
