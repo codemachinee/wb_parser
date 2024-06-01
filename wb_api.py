@@ -69,11 +69,12 @@ class parse_date:
                     with open('news.txt', 'w') as file:
                         file.write(f"{file_id}")
                         return None
-        except requests.exceptions.JSONDecodeError as e:
+        except requests.exceptions.JSONDecodeError:
             with open('news.txt', 'w') as file:
                 file.write(f"{file_id}")
-                data.append(f'Исключение: {e}')
-            return data
+                pass
+            #     data.append(f'Исключение: {e}')
+            # return data
 
     # список складов
     async def get_wb_warehouses(self):

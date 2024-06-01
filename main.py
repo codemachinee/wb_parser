@@ -160,7 +160,7 @@ async def send_news():
 async def main():
     scheduler = AsyncIOScheduler()
     # scheduler.add_job(pidr, "cron", day_of_week='mon-sun', hour=11)
-    scheduler.add_job(send_news, trigger="interval", minutes=20)
+    scheduler.add_job(send_news, trigger="interval", minutes=25)
     scheduler.start()
     await dp.start_polling(bot)
 
