@@ -15,12 +15,17 @@ kb1 = InlineKeyboardMarkup(inline_keyboard=[
 kb_choice_tovar = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Сухой корм PREMIATO 🐕', callback_data='PREMIATO')]])
 
+kb_back_to_reasons = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='🔙 Вернуться к выбору причины', callback_data='PREMIATO')]])
+
 
 kb_choice_reasons = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='🚚 Закупка оптом', callback_data='opt')],
     [InlineKeyboardButton(text='📦 Проблемы с упаковкой', callback_data='package')],
     [InlineKeyboardButton(text='🍇 Пришел не тот вкус', callback_data='wrong_taste')],
-    [InlineKeyboardButton(text='🐕 Перевод собаки на корм PREMIATO', callback_data='transfer')],
+    [InlineKeyboardButton(text='🐕 Перевод на корм PREMIATO', callback_data='transfer')],
     [InlineKeyboardButton(text='📋 Состав корма', callback_data='structure')],
-    [InlineKeyboardButton(text='❗ Употребление при проблемах со здоровьем', callback_data='health')],
-    [InlineKeyboardButton(text='🚚 Закупка оптом', callback_data='opt')],
-    [InlineKeyboardButton(text='❓ Другое', callback_data='other')]])
+    [InlineKeyboardButton(text='❗ Прием при проблемах со здоровьем', callback_data='health')],
+    [InlineKeyboardButton(text='❓ Другое', callback_data='other')],
+    [InlineKeyboardButton(text='🔙 Вернуться к выбору товара', callback_data='choice_good')]
+])
