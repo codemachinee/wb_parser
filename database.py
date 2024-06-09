@@ -1,6 +1,8 @@
 import sqlite3
 import time
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
 create_users_table = ("CREATE TABLE IF NOT EXISTS users (telegram_id TEXT, tovar TEXT, reasons TEXT, "
                       "reason_text TEXT, number_of_requests INT);")
 
@@ -10,6 +12,8 @@ class database:
         self.base = sqlite3.connect('users.db')
         self.cur = self.base.cursor()
         self.base.execute(create_users_table)
+        self.scheduler = AsyncIOScheduler()
+        self.scheduler.start()
 
     async def search_in_table(self, search_telegram_id):
         result = self.cur.execute(f"SELECT * FROM users WHERE telegram_id == ?", (search_telegram_id,)).fetchall()
@@ -45,3 +49,7 @@ class database:
         self.cur.execute(f'DELETE FROM users')
         self.base.commit()
         self.base.close()
+
+    def schedule_task(self):
+        self.scheduler.add_job(self.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
+

@@ -7,8 +7,8 @@ import math
 from salute import *
 from FSM import step_message
 from callbacks import *
-token = lemonade
-# token = codemashine_test
+# token = lemonade
+token = codemashine_test
 
 bot = Bot(token=token)
 dp = Dispatcher()
@@ -41,7 +41,8 @@ async def help(message):
                                                  f'/start - инициализация бота,\n'
                                                  f'/help - справка по боту,\n'
                                                  f'/func - вызов функциональной клавиатуры бота.\n'
-                                                 f'/sent_message - cделать рассылку по клиентской базе.\n\n'
+                                                 f'/sent_message - cделать рассылку по клиентской базе.\n'
+                                                 f'/reset_cash - cбросить кэш базы данных.\n\n'
                                                  f'<b>Для вызова Давинчи</b> необходимо указать имя в сообщении.\n\n'
                                                  f'<b>Для перевода голосового сообщения</b>(длительность до 1 мин.) '
                                                  f'в текст ответьте на него словом "давинчи" или перешлите голосовое '
@@ -67,6 +68,17 @@ async def functions(message):
     if message.chat.id in admins_list:
         await bot.send_message(message.chat.id, 'Выберите функцию:',
                                message_thread_id=message.message_thread_id, reply_markup=kb1)
+    else:
+        await bot.send_message(message.chat.id, 'Недостаточно прав',
+                               message_thread_id=message.message_thread_id)
+
+
+@dp.message(Command(commands='reset_cash'))
+async def functions(message):
+    if message.chat.id in admins_list:
+        await database().delete_all_users()
+        await bot.send_message(message.chat.id, 'Кэш очищен',
+                               message_thread_id=message.message_thread_id)
     else:
         await bot.send_message(message.chat.id, 'Недостаточно прав',
                                message_thread_id=message.message_thread_id)
@@ -183,8 +195,8 @@ async def send_news():
 
 async def main():
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(database().delete_all_users, "cron", day_of_week='mon-sun', hour=00)
     scheduler.add_job(send_news, trigger="interval", minutes=25)
+    database().schedule_task()
     scheduler.start()
     await dp.start_polling(bot)
 
