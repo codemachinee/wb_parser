@@ -7,8 +7,8 @@ import math
 from salute import *
 from FSM import step_message
 from callbacks import *
-# token = lemonade
-token = codemashine_test
+token = lemonade
+# token = codemashine_test
 
 bot = Bot(token=token)
 dp = Dispatcher()
@@ -17,6 +17,7 @@ dp = Dispatcher()
 @dp.message(Command(commands='start'))
 async def start(message):
     if message.chat.id in admins_list:
+        await send_news()
         await bot.send_message(message.chat.id, f'<b>Бот-поддержки продаж инициализирован.</b>\n'
                                f'<b>Режим доступа</b>: Администратор\n'
                                f'/help - справка по боту', message_thread_id=message.message_thread_id,
@@ -194,10 +195,10 @@ async def send_news():
 
 
 async def main():
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(send_news, trigger="interval", minutes=10)
+    # scheduler = AsyncIOScheduler()
+    # scheduler.add_job(send_news, trigger="interval", minutes=10)
     database().schedule_task()
-    scheduler.start()
+    # scheduler.start()
     await dp.start_polling(bot)
 
 
