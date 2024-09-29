@@ -195,7 +195,7 @@ async def send_news():
 
 async def main():
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(send_news, trigger="interval", minutes=25)
+    scheduler.add_job(send_news, trigger="interval", minutes=10)
     database().schedule_task()
     scheduler.start()
     await dp.start_polling(bot)

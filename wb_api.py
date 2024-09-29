@@ -64,6 +64,7 @@ class parse_date:
                             file.write(f"{i['id']}")
                         else:
                             pass
+                    print(data)
                     return data
                 else:
                     with open('news.txt', 'w') as file:
@@ -289,7 +290,7 @@ class parse_date:
 
 # parse_date().get_tovar_card()
 # parse_date().get_price()
-# parse_date().get_news()
+asyncio.run(parse_date().get_news())
 # asyncio.run(parse_date().get_wb_warehouses())
 # parse_date().get_my_warehouses()
 # parse_date().get_goods_list()

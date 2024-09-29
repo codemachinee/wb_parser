@@ -1,7 +1,7 @@
-import time
-import pandas as pd
+# import time
+# import pandas as pd
 from openpyxl import load_workbook
-import gspread
+# import gspread
 
 
 async def data_to_exel(file_name, headers, data, headers_rus=None):
