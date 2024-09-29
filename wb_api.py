@@ -291,21 +291,17 @@ class parse_date:
         try:
             BASE_URL = 'https://supplies-api.wildberries.ru/api/v1/acceptance/coefficients'
             params = {
-                "warehouseIDs": '10028',
+                "warehouseIDs": 204939
             }
             response = requests.get(BASE_URL, headers=headers, params=params)
             print(response.status_code)
             print(response.json())
-            # exel_headers = ["deliveryDumpKgtOfficeBase", "deliveryDumpKgtOfficeLiter", "deliveryDumpKgtReturnExpr",
-            #                 "deliveryDumpSrgOfficeExpr", "deliveryDumpSrgReturnExpr", "deliveryDumpSupCourierBase",
-            #                 "deliveryDumpSupCourierLiter", "deliveryDumpSupOfficeBase", "deliveryDumpSupOfficeLiter",
-            #                 "deliveryDumpSupReturnExpr", "warehouseName"]
-            # exel_headers_rus = ["deliveryDumpKgtOfficeBase", "deliveryDumpKgtOfficeLiter", "deliveryDumpKgtReturnExpr",
-            #                     "deliveryDumpSrgOfficeExpr", "deliveryDumpSrgReturnExpr", "deliveryDumpSupCourierBase",
-            #                     "deliveryDumpSupCourierLiter", "deliveryDumpSupOfficeBase", "deliveryDumpSupOfficeLiter",
-            #                     "deliveryDumpSupReturnExpr", "склад"]
-            # await data_to_exel("tables/Тарифы на возвраты.xlsx", exel_headers,
-            #                    response.json()['response']['data']['warehouseList'], exel_headers_rus)
+            exel_headers = ["date", "coefficient", "warehouseID",
+                            "warehouseName", "boxTypeName", "boxTypeID"]
+            exel_headers_rus = ["дата", "коэффициент", "ID склада",
+                                "имя склада", "тип поставки", "ID типа поставки"]
+            await data_to_exel("tables/Тарифы на возвраты.xlsx", exel_headers,
+                               response.json()['response']['data']['warehouseList'], exel_headers_rus)
         except Exception as e:
             return e
 
