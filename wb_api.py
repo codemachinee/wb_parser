@@ -290,7 +290,7 @@ class parse_date:
 
 # parse_date().get_tovar_card()
 # parse_date().get_price()
-asyncio.run(parse_date().get_news())
+# asyncio.run(parse_date().get_news())
 # asyncio.run(parse_date().get_wb_warehouses())
 # parse_date().get_my_warehouses()
 # parse_date().get_goods_list()
