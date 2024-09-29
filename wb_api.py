@@ -287,9 +287,32 @@ class parse_date:
         except Exception as e:
             return e
 
+    async def get_coeffs_warehouses(self):
+        try:
+            BASE_URL = 'https://supplies-api.wildberries.ru/api/v1/acceptance/coefficients'
+            params = {
+                "warehouseIDs": '10028',
+            }
+            response = requests.get(BASE_URL, headers=headers, params=params)
+            print(response.status_code)
+            print(response.json())
+            # exel_headers = ["deliveryDumpKgtOfficeBase", "deliveryDumpKgtOfficeLiter", "deliveryDumpKgtReturnExpr",
+            #                 "deliveryDumpSrgOfficeExpr", "deliveryDumpSrgReturnExpr", "deliveryDumpSupCourierBase",
+            #                 "deliveryDumpSupCourierLiter", "deliveryDumpSupOfficeBase", "deliveryDumpSupOfficeLiter",
+            #                 "deliveryDumpSupReturnExpr", "warehouseName"]
+            # exel_headers_rus = ["deliveryDumpKgtOfficeBase", "deliveryDumpKgtOfficeLiter", "deliveryDumpKgtReturnExpr",
+            #                     "deliveryDumpSrgOfficeExpr", "deliveryDumpSrgReturnExpr", "deliveryDumpSupCourierBase",
+            #                     "deliveryDumpSupCourierLiter", "deliveryDumpSupOfficeBase", "deliveryDumpSupOfficeLiter",
+            #                     "deliveryDumpSupReturnExpr", "склад"]
+            # await data_to_exel("tables/Тарифы на возвраты.xlsx", exel_headers,
+            #                    response.json()['response']['data']['warehouseList'], exel_headers_rus)
+        except Exception as e:
+            return e
+
 
 # parse_date().get_tovar_card()
 # parse_date().get_price()
+asyncio.run(parse_date().get_coeffs_warehouses())
 # asyncio.run(parse_date().get_news())
 # asyncio.run(parse_date().get_wb_warehouses())
 # parse_date().get_my_warehouses()
