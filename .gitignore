@@ -12,6 +12,7 @@ tables/Тарифы на возвраты.xlsx
 tables/Тарифы на короб.xlsx
 tables/Тарифы на монопалет.xlsx
 tables/report_questions.xlsx
+tables/Коэффициенты складов.xlsx
 users.db
 __pycache__/exel.cpython-310.pyc
 __pycache__/passwords.cpython-310.pyc
