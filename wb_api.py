@@ -292,7 +292,7 @@ class parse_date:
             data = []
             BASE_URL = 'https://supplies-api.wildberries.ru/api/v1/acceptance/coefficients'
             params = {
-                "warehouseIDs": 204939
+                "warehouseIDs": ''
             }
             response = requests.get(BASE_URL, headers=headers, params=params)
             print(response.status_code)
@@ -302,7 +302,7 @@ class parse_date:
             for i in response.json():
                 data.append({'дата': f'{i["date"]}', 'коэффициент': f'{i["coefficient"]}', 'ID склада': f'{i["warehouseID"]}',
                              'имя склада': f'{i["warehouseName"]}', 'тип поставки': f'{i["boxTypeName"]}',
-                             'ID типа поставки': f'{i["boxTypeID"]}'})
+                             'ID типа поставки': f'{i.get("boxTypeID", "отсутствует")}'})
             await data_to_exel("tables/Коэффициенты складов.xlsx", exel_headers_rus,
                                data)
         except Exception as e:
