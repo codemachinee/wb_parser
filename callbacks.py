@@ -1,11 +1,13 @@
+from aiogram.fsm.context import FSMContext
+
 from wb_api import *
-from aiogram.types import FSInputFile
+from aiogram.types import FSInputFile, CallbackQuery
 from keyboards import *
 from google_sheets import *
 from database import *
 
 
-async def callbacks(bot, callback):
+async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
     if callback.data == 'wb_warehouses':
         data = await parse_date().get_wb_warehouses()
         if data is None:
@@ -197,3 +199,15 @@ async def callbacks(bot, callback):
             await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Закупка оптом')
         else:
             await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Закупка оптом')
+
+    elif callback.data == 'slots':
+        await bot.edit_message_text(f'Меню настройки уведомлений о слотах на приемку товаров.',
+                                    chat_id=callback.message.chat.id, message_id=callback.message.message_id)
+        await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
+                                            reply_markup=kb_slots_menu)
+    elif callback.data == 'func_menu':
+        await bot.edit_message_text(f'Выберите функцию:',  chat_id=callback.message.chat.id, message_id=callback.message.message_id)
+        await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
+                                            reply_markup=kb1)
+    else:
+        await callback.message.reply(f'Данный раздел в разработке')

@@ -1,14 +1,13 @@
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import math
 from salute import *
 from FSM import step_message
 from callbacks import *
-token = lemonade
-# token = codemashine_test
+# token = lemonade
+token = codemashine_test
 
 bot = Bot(token=token)
 dp = Dispatcher()
@@ -17,7 +16,7 @@ dp = Dispatcher()
 @dp.message(Command(commands='start'))
 async def start(message):
     if message.chat.id in admins_list:
-        await send_news()
+        # await send_news()
         await bot.send_message(message.chat.id, f'<b>Бот-поддержки продаж инициализирован.</b>\n'
                                f'<b>Режим доступа</b>: Администратор\n'
                                f'/help - справка по боту', message_thread_id=message.message_thread_id,
@@ -102,13 +101,7 @@ async def perehvat(message, state: FSMContext):
     await state.clear()
 
 
-@dp.callback_query(F.data)
-async def check_callback(callback: CallbackQuery):
-    data_from_database = await database().search_in_table(callback.message.chat.id)
-    if data_from_database is not False and data_from_database[0][4] >= 6:
-        pass
-    else:
-        await callbacks(bot, callback)
+dp.callback_query.register(callbacks, F.data)
 
 
 @dp.message(F.text)
