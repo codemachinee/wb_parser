@@ -295,8 +295,8 @@ class parse_date:
                 "warehouseIDs": ''
             }
             response = requests.get(BASE_URL, headers=headers, params=params)
-            print(response.status_code)
-            print(response.json())
+            # print(response.status_code)
+            # print(response.json())
             exel_headers_rus = ["дата", "коэффициент", "ID склада",
                                 "имя склада", "тип поставки", "ID типа поставки"]
             for i in response.json():
@@ -305,6 +305,7 @@ class parse_date:
                              'ID типа поставки': f'{i.get("boxTypeID", "отсутствует")}'})
             await data_to_exel("tables/Коэффициенты складов.xlsx", exel_headers_rus,
                                data)
+            return True
         except Exception as e:
             return e
 
