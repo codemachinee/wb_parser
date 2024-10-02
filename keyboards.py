@@ -35,7 +35,7 @@ kb_choice_reasons = InlineKeyboardMarkup(inline_keyboard=[
 
 
 kb_slots_menu = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='📦 Выбор склада', callback_data='choice_warehouse')],
+    [InlineKeyboardButton(text='📦 Выбор склада', callback_data='warehouse_choice')],
     [InlineKeyboardButton(text='⚙️ Настройка склада', callback_data='warehouse_settings')],
     [InlineKeyboardButton(text='🔙 Вернуться назад', callback_data='func_menu')]
 ])
@@ -54,17 +54,6 @@ class buttons:  # класс для создания клавиатур разл
         self.all_button = all_button
 
     async def warehouses_buttons(self):
-        await parse_date().get_coeffs_warehouses()
-        wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
-        sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
-        # Проходим по строкам начиная с первой строки (или с другой, если есть заголовки)
-        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=3, max_col=4):
-            # Проверяем значение в 3-м столбце
-            if str(row[2].value) == value_col3:
-                # Если соответствует, проверяем значение в 6-м столбце
-                if str(row[5].value) == value_col6:
-                    print(True)
-                    return True  # Если оба условия выполняются, возвращаем True
         answer_base = await database_func(self.bot, self.message).chek_user_in_users_by_chat_id()
         if answer_base is False:
             but1 = types.KeyboardButton(text='✅ Войти в аккаунт')

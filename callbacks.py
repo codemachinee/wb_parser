@@ -210,22 +210,31 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
         await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
                                             reply_markup=kb1)
 
-    elif callback.data == 'choice_warehouse':
+    elif callback.data.startswith('warehouse_'):
         ids = []
         keys_list = []
         await parse_date().get_coeffs_warehouses()
+        await database().search_in_table(callback.message.chat.id, 'users_for_notification')
         wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
         sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
         # Проходим по строкам начиная с первой строки (или с другой, если есть заголовки)
-        for row in sheet.iter_rows(min_row=2, max_row=17, min_col=3, max_col=4):
+        callback.data = callback.data[10:]
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=3, max_col=4):
             # Проверяем значение в 3-м столбце
             if row[0].value not in ids:
-                row_number = row[0].row
                 ids.append(row[0].value)
-                keys_list.append([row[0].value, row[1].value, row_number])
+                keys_list.append([row[0].value, row[1].value])
+                if row[0] == callback.data:
+                    row_number = row[0].row
+                    iter_0 = (int(row_number)//16)*16
+                    iter_1 = (1 + int(row_number)//16)*16
+                    keys_list = keys_list[iter_0:iter_1 + 1]
+                    break
+                else:
+                    pass
             else:
                 pass
-        await buttons(bot, callback, keyboard_dict=keys_list, back_value='slots')
+        await buttons(bot, callback, keyboard_dict=keys_list, back_value='slots').warehouses_buttons()
         await bot.edit_message_text(f'Выберите интересующие склады:',  chat_id=callback.message.chat.id,
                                     message_id=callback.message.message_id)
         await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
