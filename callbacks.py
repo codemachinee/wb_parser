@@ -213,8 +213,9 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
     elif callback.data.startswith('warehouse_'):
         ids = []
         keys_list = []
+        subscritions_list = []
         await parse_date().get_coeffs_warehouses()
-        await database().search_in_table(callback.message.chat.id, 'users_for_notification')
+        user_data = await database().search_in_table(callback.message.chat.id, 'users_for_notification')
         wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
         sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
         # Проходим по строкам начиная с первой строки (или с другой, если есть заголовки)
@@ -234,7 +235,27 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                     pass
             else:
                 pass
-        await buttons(bot, callback, keyboard_dict=keys_list, back_value='slots').warehouses_buttons()
+        if user_data is False or len(user_data) <= 2:
+            if callback.data == user_data[1][2]:
+                await database().delete_users_for_notification(callback.message.chat.id, callback.data)
+            else:
+                await database().add_user_in_users_for_notification(callback.message.chat.id,
+                                                                    callback.message.from_user.first_name,
+                                                                    callback.data)
+                subscritions_list = [user_data[1][2], callback.data]
+        else:
+            for i in user_data:
+                if callback.data == i[2]:
+                    await database().delete_users_for_notification(callback.message.chat.id, callback.data)
+                else:
+                    subscritions_list.append(i[2])
+            if len(subscritions_list) == len(user_data):
+                await database().add_user_in_users_for_notification(callback.message.chat.id,
+                                                                    callback.message.from_user.first_name,
+                                                                    callback.data)
+                subscritions_list.append(callback.data)
+        await buttons(bot, callback, keyboard_dict=keys_list, back_value='slots',
+                      subscritions_list=subscritions_list).warehouses_buttons()
         await bot.edit_message_text(f'Выберите интересующие склады:',  chat_id=callback.message.chat.id,
                                     message_id=callback.message.message_id)
         await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,

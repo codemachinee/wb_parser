@@ -1,3 +1,4 @@
+import asyncio
 import sqlite3
 import time
 
@@ -40,11 +41,11 @@ class database:
                                                                                  max_koeff, type_of_delivery, date))
         self.base.commit()
 
-    async def update_table_in_users_for_notification(self, telegram_id, update_data):
+    async def update_table_in_users_for_notification(self, telegram_id, update_data, warehouses):
         set_clause = ", ".join([f"{key}=?" for key in update_data.keys()])
         # Выполняем запрос, передавая значения для обновления и telegram_id
-        self.cur.execute(f"UPDATE users SET {set_clause} WHERE telegram_id=?", (*update_data.values(),
-                                                                                                  telegram_id))
+        self.cur.execute(f"UPDATE users SET {set_clause} WHERE telegram_id=? AND warehouses=?",
+                         (*update_data.values(), telegram_id, warehouses))
         self.base.commit()
 
     async def update_table(self, telegram_id, update_tovar=None, update_reasons=None,
@@ -64,11 +65,33 @@ class database:
         self.base.commit()
         self.base.close()
 
+    async def delete_users_for_notification(self, telegram_id, warehouses):
+        self.cur.execute(f"DELETE FROM users_for_notification WHERE telegram_id = ? AND warehouses=?;",
+                         (telegram_id, warehouses))
+        self.base.commit()
+        self.base.close()
+
     async def delete_all_users(self, table='users'):
         self.cur.execute(f'DELETE FROM {table}')
         self.base.commit()
         self.base.close()
 
+    async def update_users_with_multiple_entries(self, telegram_id, column_name, values_list,
+                                                 table='users_for_notification'):
+        values_str = ', '.join(map(str, values_list))
+        update_query = f"""
+        UPDATE {table}
+        SET {column_name} = %s
+        WHERE telegram_id = %s;
+        """
+        self.cur.execute(update_query, (values_str, telegram_id))
+        self.base.commit()
+        self.base.close()  # Подтверждаем транзакцию
+        return [True, "Записи успешно обновлены."]
+
     def schedule_task(self):
         self.scheduler.add_job(self.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
+
+
+print(asyncio.run(database().search_in_table('11111', 'users_for_notification')))
 
