@@ -1,5 +1,8 @@
 import openpyxl
+from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+from database import database
 from wb_api import parse_date
 
 kb1 = InlineKeyboardMarkup(inline_keyboard=[
@@ -44,31 +47,56 @@ kb_slots_menu = InlineKeyboardMarkup(inline_keyboard=[
 class buttons:  # класс для создания клавиатур различных категорий товаров
 
     def __init__(self, bot, message, kategoriya=None, keyboard_dict=None, back_value=None, subscritions_list=None,
-                 all_button=None):
+                 back_button=None, next_button=None):
         self.bot = bot
         self.message = message
         self.subscritions_list = subscritions_list
         self.kategoriya = kategoriya
         self.keyboard_dict = keyboard_dict
         self.back_value = back_value
-        self.all_button = all_button
+        self.back_button = back_button
+        self.next_button = next_button
 
     async def warehouses_buttons(self):
-        answer_base = await database_func(self.bot, self.message).chek_user_in_users_by_chat_id()
-        if answer_base is False:
-            but1 = types.KeyboardButton(text='✅ Войти в аккаунт')
-            but2 = types.KeyboardButton(text='🆕 Регистрация')
-            kb1 = types.ReplyKeyboardMarkup(keyboard=[[but1, but2]], resize_keyboard=True, row_width=3)
-            if self.message.from_user.first_name:
-                await self.bot.send_message(self.message.chat.id,
-                                            text=f'Здравствуйте, {self.message.from_user.first_name}\n'
-                                                 f'Вы не авторизованы',
-                                            reply_markup=kb1)
+        keys = {}
+        keyboard_list = []
+        keys_list = self.keyboard_dict
+        for i in keys_list:
+            index = keys_list.index(i)
+            if self.subscritions_list is not None and f'{i[0]}' in self.subscritions_list:
+                button = types.InlineKeyboardButton(text=f"🔘{i[1]}",
+                                                    callback_data=f"warehouse_{i[2]}")
+                keys[f'but{index}'] = button
             else:
-                await self.bot.send_message(self.message.chat.id,
-                                            text=f'Здравствуйте!\n'
-                                                 f'Вы не авторизованы',
-                                            reply_markup=kb1)
+                button = types.InlineKeyboardButton(text=i[1],
+                                                    callback_data=f"warehouse_{i[2]}")
+                keys[f'but{index}'] = button
+
+            # Группируем кнопки попарно
+            if index > 0 and index % 2 != 0:
+                previous_button = keys[f'but{index - 1}']
+                if len(i[1]) <= 16 and len(keys_list[index - 1][1]) <= 16:
+                    keyboard_list.append([previous_button, button])
+                else:
+                    keyboard_list.append([previous_button])
+                    keyboard_list.append([button])
+            elif index == (len(keys_list) - 1):
+                keyboard_list.append([button])
+        if self.back_value is not None:
+            back_button = types.InlineKeyboardButton(text="↩️ Вернуться назад", callback_data=self.back_value)
+            keyboard_list.append([back_button])
+        if self.next_button is not None:
+            next_button = types.InlineKeyboardButton(text="➡️", callback_data=f"warehouse_{self.next_button}")
+            keyboard_list.append([next_button])
+        if self.back_button is not None:
+            back_button = types.InlineKeyboardButton(text="⬅️️", callback_data=f"warehouse_{self.back_button}")
+            keyboard_list.append([back_button])
+        kb2 = types.InlineKeyboardMarkup(inline_keyboard=keyboard_list, resize_keyboard=True)
+        await self.bot.edit_message_text(
+            text=f'Выберите интересующие склады (выбранные склады '
+                 'отмечены: 🔘)', chat_id=self.message.chat.id, message_id=self.message.message_id)
+        await self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
+                                                 reply_markup=kb2)
 
     async def zayavki_buttons(self):
         keys = {}

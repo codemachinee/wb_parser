@@ -219,47 +219,60 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
         wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
         sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
         # Проходим по строкам начиная с первой строки (или с другой, если есть заголовки)
-        callback.data = callback.data[10:]
-        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=3, max_col=4):
-            # Проверяем значение в 3-м столбце
-            if row[0].value not in ids:
-                ids.append(row[0].value)
-                keys_list.append([row[0].value, row[1].value])
-                if row[0] == callback.data:
-                    row_number = row[0].row
-                    iter_0 = (int(row_number)//16)*16
-                    iter_1 = (1 + int(row_number)//16)*16
-                    keys_list = keys_list[iter_0:iter_1 + 1]
+        call_data = callback.data[10:]
+        if call_data == 'choice':
+            for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=3, max_col=4):
+                if len(keys_list) == 16:
                     break
+                # Проверяем значение в 3-м столбце
+                elif row[0].value not in ids:
+                    ids.append(row[0].value)
+                    keys_list.append([row[0].value, row[1].value, row[0].row])
                 else:
                     pass
-            else:
-                pass
-        if user_data is False or len(user_data) <= 2:
-            if callback.data == user_data[1][2]:
-                await database().delete_users_for_notification(callback.message.chat.id, callback.data)
-            else:
-                await database().add_user_in_users_for_notification(callback.message.chat.id,
-                                                                    callback.message.from_user.first_name,
-                                                                    callback.data)
-                subscritions_list = [user_data[1][2], callback.data]
+            next_button = f'nb{int(keys_list[-1][2])+1}'
+
         else:
-            for i in user_data:
-                if callback.data == i[2]:
-                    await database().delete_users_for_notification(callback.message.chat.id, callback.data)
+            for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=3, max_col=4):
+                # Проверяем значение в 3-м столбце
+                if row[0].value not in ids:
+                    ids.append(row[0].value)
+                    keys_list.append([row[0].value, row[1].value])
+                    if row[0] == call_data:
+                        row_number = row[0].row
+                        iter_0 = (int(row_number)//16)*16
+                        iter_1 = (1 + int(row_number)//16)*16
+                        keys_list = keys_list[iter_0:iter_1 + 1]
+                        break
+                    else:
+                        pass
                 else:
-                    subscritions_list.append(i[2])
-            if len(subscritions_list) == len(user_data):
-                await database().add_user_in_users_for_notification(callback.message.chat.id,
-                                                                    callback.message.from_user.first_name,
-                                                                    callback.data)
-                subscritions_list.append(callback.data)
-        await buttons(bot, callback, keyboard_dict=keys_list, back_value='slots',
-                      subscritions_list=subscritions_list).warehouses_buttons()
-        await bot.edit_message_text(f'Выберите интересующие склады:',  chat_id=callback.message.chat.id,
-                                    message_id=callback.message.message_id)
-        await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
-                                            reply_markup=kb1)
+                    pass
+            if user_data is False or len(user_data[1]) <= 2:
+                if call_data == user_data[1][2]:
+                    await database().delete_users_for_notification(callback.message.chat.id, call_data)
+                else:
+                    await database().add_user_in_users_for_notification(callback.message.chat.id,
+                                                                        callback.message.from_user.first_name,
+                                                                        call_data)
+                    subscritions_list = [user_data[1][2], call_data]
+            else:
+                for i in user_data:
+                    if call_data == i[2]:
+                        await database().delete_users_for_notification(callback.message.chat.id, call_data)
+                    else:
+                        subscritions_list.append(i[2])
+                if len(subscritions_list) == len(user_data):
+                    await database().add_user_in_users_for_notification(callback.message.chat.id,
+                                                                        callback.message.from_user.first_name,
+                                                                        call_data)
+                    subscritions_list.append(call_data)
+        await buttons(bot, callback.message, keyboard_dict=keys_list, back_value='slots',
+                      subscritions_list=subscritions_list, next_button=next_button).warehouses_buttons()
+        # await bot.edit_message_text(f'Выберите интересующие склады:',  chat_id=callback.message.chat.id,
+        #                             message_id=callback.message.message_id)
+        # await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
+        #                                     reply_markup=kb1)
 
     else:
         await callback.message.reply(f'Данный раздел в разработке')

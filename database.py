@@ -24,7 +24,7 @@ class database:
     async def search_in_table(self, search_telegram_id, table='users'):
         result = self.cur.execute(f"SELECT * FROM {table} WHERE telegram_id == ?", (search_telegram_id,)).fetchall()
         if result:
-            return result
+            return [True, result]
         else:
             return False
 
@@ -93,5 +93,5 @@ class database:
         self.scheduler.add_job(self.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
 
 
-print(asyncio.run(database().search_in_table('11111', 'users_for_notification')))
+# print(asyncio.run(database().search_in_table('11111', 'users_for_notification')))
 
