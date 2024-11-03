@@ -1,5 +1,5 @@
 from aiogram.fsm.context import FSMContext
-
+from datetime import datetime
 from wb_api import *
 from aiogram.types import FSInputFile, CallbackQuery
 from keyboards import *
@@ -211,64 +211,109 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                             reply_markup=kb1)
 
     elif callback.data.startswith('warehouse_'):
-        ids = []
+        max_row = False
         keys_list = []
-        subscritions_list = []
-        await parse_date().get_coeffs_warehouses()
         user_data = await database().search_in_table(callback.message.chat.id, 'users_for_notification')
+        if user_data is False:
+            await database().add_user_in_users_for_notification(callback.message.chat.id,
+                                                                callback.message.chat.first_name, dates=datetime.now())
+            subscritions_list = []
+        else:
+            subscritions_list = user_data[1][0][2].split(', ')
         wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
         sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
         # Проходим по строкам начиная с первой строки (или с другой, если есть заголовки)
         call_data = callback.data[10:]
         if call_data == 'choice':
-            for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=3, max_col=4):
+            await parse_date().get_coeffs_warehouses()
+            for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=1, max_col=6):
                 if len(keys_list) == 16:
                     break
                 # Проверяем значение в 3-м столбце
-                elif row[0].value not in ids:
-                    ids.append(row[0].value)
-                    keys_list.append([row[0].value, row[1].value, row[0].row])
-                else:
-                    pass
-            next_button = f'nb{int(keys_list[-1][2])+1}'
-
-        else:
-            for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=3, max_col=4):
-                # Проверяем значение в 3-м столбце
-                if row[0].value not in ids:
-                    ids.append(row[0].value)
-                    keys_list.append([row[0].value, row[1].value])
-                    if row[0] == call_data:
-                        row_number = row[0].row
-                        iter_0 = (int(row_number)//16)*16
-                        iter_1 = (1 + int(row_number)//16)*16
-                        keys_list = keys_list[iter_0:iter_1 + 1]
+                elif row[5].value == '2':
+                    keys_list.append([row[2].value, row[3].value, row[0].row])
+                    if row[3].row == sheet.max_row:
+                        max_row = True
                         break
-                    else:
-                        pass
                 else:
                     pass
-            if user_data is False or len(user_data[1]) <= 2:
-                if call_data == user_data[1][2]:
-                    await database().delete_users_for_notification(callback.message.chat.id, call_data)
-                else:
-                    await database().add_user_in_users_for_notification(callback.message.chat.id,
-                                                                        callback.message.from_user.first_name,
-                                                                        call_data)
-                    subscritions_list = [user_data[1][2], call_data]
+            if max_row is True:
+                next_button = None
             else:
-                for i in user_data:
-                    if call_data == i[2]:
-                        await database().delete_users_for_notification(callback.message.chat.id, call_data)
-                    else:
-                        subscritions_list.append(i[2])
-                if len(subscritions_list) == len(user_data):
-                    await database().add_user_in_users_for_notification(callback.message.chat.id,
-                                                                        callback.message.from_user.first_name,
-                                                                        call_data)
-                    subscritions_list.append(call_data)
+                next_button = f'nb{int(keys_list[-1][2]) + 1}'
+            back_button = None
+
+        elif call_data == 'settings':
+            pass
+        elif call_data[0:2] == 'nb':
+            call_data = call_data[2:]
+            for row in sheet.iter_rows(min_row=int(call_data), max_row=sheet.max_row, min_col=1, max_col=6):
+                if len(keys_list) == 16:
+                    break
+                # Проверяем значение в 3-м столбце
+                elif row[5].value == '2' and str(row[0].value)[0:10] == datetime.now().strftime("%Y-%m-%d"):
+                    keys_list.append([row[2].value, row[3].value, row[0].row])
+                elif str(row[0].value)[0:10] == (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"):
+                    max_row = True
+                    break
+                else:
+                    pass
+            if max_row is True:
+                next_button = None
+            else:
+                next_button = f'nb{int(keys_list[-1][2])+1}'
+            back_button = f'bb{int(keys_list[0][2])-1}'
+        elif call_data[0:2] == 'bb':
+            call_data = call_data[2:]
+            for row in reversed(list(sheet.iter_rows(min_row=2, max_row=int(call_data), min_col=1, max_col=6))):
+                if len(keys_list) == 16:
+                    break
+                # Проверяем значение в 3-м столбце
+                elif row[5].value == '2' and str(row[0].value)[0:10] == datetime.now().strftime("%Y-%m-%d"):
+                    keys_list.append([row[2].value, row[3].value, row[0].row])
+                    if row[0].row == 2:
+                        break
+                else:
+                    pass
+            keys_list = keys_list[::-1]
+            next_button = f'nb{int(keys_list[-1][2])+1}'
+            if int(keys_list[0][2]) == 2:
+                back_button = None
+            else:
+                back_button = f'bb{int(keys_list[0][2])-1}'
+        else:
+            call_data = call_data.split('_')
+            if call_data[0] == 'del':
+                subscritions_list = []
+            elif str(sheet.cell(int(call_data[0]), 3).value) in subscritions_list:
+                subscritions_list.remove(str(sheet.cell(int(call_data[0]), 3).value))
+            else:
+                subscritions_list.append(str(sheet.cell(int(call_data[0]), 3).value))
+
+            for row in sheet.iter_rows(min_row=int(call_data[1]), max_row=sheet.max_row, min_col=1, max_col=6):
+                if len(keys_list) == 16:
+                    break
+                # Проверяем значение в 3-м столбце
+                elif row[5].value == '2' and str(row[0].value)[0:10] == datetime.now().strftime("%Y-%m-%d"):
+                    keys_list.append([row[2].value, row[3].value, row[0].row])
+                elif str(row[0].value)[0:10] == (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"):
+                    max_row = True
+                    break
+                else:
+                    pass
+            if max_row is True:
+                next_button = None
+            else:
+                next_button = f'nb{int(keys_list[-1][2])+1}'
+            if int(keys_list[0][2]) == 2:
+                back_button = None
+            else:
+                back_button = f'bb{int(keys_list[0][2])-1}'
+            await database().update_users_with_multiple_entries(callback.message.chat.id, 'warehouses',
+                                                                subscritions_list)
+
         await buttons(bot, callback.message, keyboard_dict=keys_list, back_value='slots',
-                      subscritions_list=subscritions_list, next_button=next_button).warehouses_buttons()
+                      subscritions_list=subscritions_list, back_button=back_button, next_button=next_button).warehouses_buttons()
         # await bot.edit_message_text(f'Выберите интересующие склады:',  chat_id=callback.message.chat.id,
         #                             message_id=callback.message.message_id)
         # await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,

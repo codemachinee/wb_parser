@@ -46,7 +46,7 @@ kb_slots_menu = InlineKeyboardMarkup(inline_keyboard=[
 
 class buttons:  # класс для создания клавиатур различных категорий товаров
 
-    def __init__(self, bot, message, kategoriya=None, keyboard_dict=None, back_value=None, subscritions_list=None,
+    def __init__(self, bot, message, kategoriya=None, keyboard_dict=None, back_value=None, subscritions_list=[],
                  back_button=None, next_button=None):
         self.bot = bot
         self.message = message
@@ -65,11 +65,11 @@ class buttons:  # класс для создания клавиатур разл
             index = keys_list.index(i)
             if self.subscritions_list is not None and f'{i[0]}' in self.subscritions_list:
                 button = types.InlineKeyboardButton(text=f"🔘{i[1]}",
-                                                    callback_data=f"warehouse_{i[2]}")
+                                                    callback_data=f"warehouse_{i[2]}_{2 if self.back_button is None else int(self.back_button[2:])+1}")
                 keys[f'but{index}'] = button
             else:
                 button = types.InlineKeyboardButton(text=i[1],
-                                                    callback_data=f"warehouse_{i[2]}")
+                                                    callback_data=f"warehouse_{i[2]}_{2 if self.back_button is None else int(self.back_button[2:])+1}")
                 keys[f'but{index}'] = button
 
             # Группируем кнопки попарно
@@ -82,15 +82,23 @@ class buttons:  # класс для создания клавиатур разл
                     keyboard_list.append([button])
             elif index == (len(keys_list) - 1):
                 keyboard_list.append([button])
-        if self.back_value is not None:
-            back_button = types.InlineKeyboardButton(text="↩️ Вернуться назад", callback_data=self.back_value)
-            keyboard_list.append([back_button])
-        if self.next_button is not None:
+        if self.next_button is not None and self.back_button is not None:
+            back_button = types.InlineKeyboardButton(text="⬅️️", callback_data=f"warehouse_{self.back_button}")
+            next_button = types.InlineKeyboardButton(text="➡️", callback_data=f"warehouse_{self.next_button}")
+            keyboard_list.append([back_button, next_button])
+        elif self.next_button is not None:
             next_button = types.InlineKeyboardButton(text="➡️", callback_data=f"warehouse_{self.next_button}")
             keyboard_list.append([next_button])
-        if self.back_button is not None:
+        elif self.back_button is not None:
             back_button = types.InlineKeyboardButton(text="⬅️️", callback_data=f"warehouse_{self.back_button}")
             keyboard_list.append([back_button])
+        if len(self.subscritions_list) > 1:
+            dell_all_button = types.InlineKeyboardButton(text="❌ Удалить выбранные склады",
+                                                         callback_data=f"warehouse_del_{2 if self.back_button is None else int(self.back_button[2:])+1}")
+            keyboard_list.append([dell_all_button])
+        if self.back_value is not None:
+            back_value_button = types.InlineKeyboardButton(text="↩️ Вернуться в меню", callback_data=self.back_value)
+            keyboard_list.append([back_value_button])
         kb2 = types.InlineKeyboardMarkup(inline_keyboard=keyboard_list, resize_keyboard=True)
         await self.bot.edit_message_text(
             text=f'Выберите интересующие склады (выбранные склады '

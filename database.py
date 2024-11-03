@@ -33,13 +33,15 @@ class database:
                          f"VALUES (?, ?, ?, ?, ?);",
                          (update_telegram_id, update_tovar, update_reasons, update_reason_text, 1))
         self.base.commit()
+        self.base.close()
 
     async def add_user_in_users_for_notification(self, telegram_id, name=None, warehouses=None, max_koeff=None,
-                                                 type_of_delivery=None, date=None):
+                                                 type_of_delivery=None, dates=None):
         self.cur.execute(f"INSERT INTO users_for_notification (telegram_id, name, warehouses, max_koeff, "
-                         f"type_of_delivery, date) VALUES (?, ?, ?, ?, ?, ?);", (telegram_id, name, warehouses,
-                                                                                 max_koeff, type_of_delivery, date))
+                         f"type_of_delivery, dates) VALUES (?, ?, ?, ?, ?, ?);", (telegram_id, name, warehouses,
+                                                                                 max_koeff, type_of_delivery, dates))
         self.base.commit()
+        self.base.close()
 
     async def update_table_in_users_for_notification(self, telegram_id, update_data, warehouses):
         set_clause = ", ".join([f"{key}=?" for key in update_data.keys()])
@@ -47,6 +49,7 @@ class database:
         self.cur.execute(f"UPDATE users SET {set_clause} WHERE telegram_id=? AND warehouses=?",
                          (*update_data.values(), telegram_id, warehouses))
         self.base.commit()
+        self.base.close()
 
     async def update_table(self, telegram_id, update_tovar=None, update_reasons=None,
                            update_number_of_requests=None):
@@ -59,6 +62,7 @@ class database:
             self.cur.execute("UPDATE users SET number_of_requests=? WHERE telegram_id=?",
                              (update_number_of_requests, telegram_id))
         self.base.commit()
+        self.base.close()
 
     async def delete_user(self, telegram_id, table):
         self.cur.execute(f"DELETE FROM {table} WHERE telegram_id = ?;", (telegram_id,))
@@ -81,8 +85,8 @@ class database:
         values_str = ', '.join(map(str, values_list))
         update_query = f"""
         UPDATE {table}
-        SET {column_name} = %s
-        WHERE telegram_id = %s;
+        SET {column_name} = ?
+        WHERE telegram_id = ?;
         """
         self.cur.execute(update_query, (values_str, telegram_id))
         self.base.commit()
