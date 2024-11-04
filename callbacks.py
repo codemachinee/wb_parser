@@ -218,11 +218,14 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             await database().add_user_in_users_for_notification(callback.message.chat.id,
                                                                 callback.message.chat.first_name, dates=datetime.now())
             subscritions_list = []
-        else:
+        elif user_data[1][0][2]:
             subscritions_list = user_data[1][0][2].split(', ')
+        else:
+            subscritions_list = []
         wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
         sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
         # Проходим по строкам начиная с первой строки (или с другой, если есть заголовки)
+        box_id = str(sheet.cell(2, 6).value)
         call_data = callback.data[10:]
         if call_data == 'choice':
             await parse_date().get_coeffs_warehouses()
@@ -251,7 +254,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 if len(keys_list) == 16:
                     break
                 # Проверяем значение в 3-м столбце
-                elif row[5].value == '2' and str(row[0].value)[0:10] == datetime.now().strftime("%Y-%m-%d"):
+                elif row[5].value == box_id and str(row[0].value)[0:10] == datetime.now().strftime("%Y-%m-%d"):
                     keys_list.append([row[2].value, row[3].value, row[0].row])
                 elif str(row[0].value)[0:10] == (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"):
                     max_row = True
@@ -269,7 +272,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 if len(keys_list) == 16:
                     break
                 # Проверяем значение в 3-м столбце
-                elif row[5].value == '2' and str(row[0].value)[0:10] == datetime.now().strftime("%Y-%m-%d"):
+                elif row[5].value == box_id and str(row[0].value)[0:10] == datetime.now().strftime("%Y-%m-%d"):
                     keys_list.append([row[2].value, row[3].value, row[0].row])
                     if row[0].row == 2:
                         break
@@ -294,7 +297,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 if len(keys_list) == 16:
                     break
                 # Проверяем значение в 3-м столбце
-                elif row[5].value == '2' and str(row[0].value)[0:10] == datetime.now().strftime("%Y-%m-%d"):
+                elif row[5].value == box_id and str(row[0].value)[0:10] == datetime.now().strftime("%Y-%m-%d"):
                     keys_list.append([row[2].value, row[3].value, row[0].row])
                 elif str(row[0].value)[0:10] == (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"):
                     max_row = True
