@@ -187,6 +187,43 @@ async def send_news():
         await bot.send_message(admin_id, f'Ошибка в фyкции send_news: {e}')
 
 
+async def search_warehouses():
+    base_data = await database().return_base_data()
+    if base_data is False:
+        pass
+    else:
+        for i in base_data:
+            if len(i[1]) != 0 and len(i[3]) != 0:
+                warehouses_list = i[1].split(', ')
+                wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
+                sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
+                for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=1, max_col=6):
+                    if str(row[2].value) in warehouses_list:
+                        if str(row[4].value) == i[3]:
+                            warehouses_list.remove(str(row[2].value))
+                            if str(row[1].value) != '-1' and int(row[1].value) <= int(i[2]):
+                                await bot.send_message(int(i[0]), f'<b>Появился слот на приемку товара!</b>\n\n'
+                                                                  f'<b>склад:</b> {row[3].value}\n'
+                                                                  f'<b>коэффициент приемки:</b> {row[1].value}\n'
+                                                                  f'<b>дата:</b> {row[0].value}\n\n'
+                                                                  f'[создать поставку](https://seller.wildberries.ru'
+                                                                  f'/supplies-management/new-supply/goods?draftID='
+                                                                  f'de3416a0-28de-4ae1-9e6e-0e2f18d63ce9)',
+                                                       parse_mode="Markdown")
+                                if len(warehouses_list) == 0:
+                                    break
+                            else:
+                                if len(warehouses_list) == 0:
+                                    break
+                        else:
+                            pass
+                    else:
+                        pass
+
+            else:
+                pass
+
+
 async def main():
     # scheduler = AsyncIOScheduler()
     # scheduler.add_job(send_news, trigger="interval", minutes=10)

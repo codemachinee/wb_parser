@@ -233,7 +233,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 if len(keys_list) == 16:
                     break
                 # Проверяем значение в 3-м столбце
-                elif row[5].value == '2':
+                elif row[5].value == box_id:
                     keys_list.append([row[2].value, row[3].value, row[0].row])
                     if row[3].row == sheet.max_row:
                         max_row = True
@@ -246,12 +246,13 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 next_button = f'nb{int(keys_list[-1][2]) + 1}'
             back_button = None
 
-        elif call_data == 'settings':
-            pass
         elif call_data[0:2] == 'nb':
             call_data = call_data[2:]
             for row in sheet.iter_rows(min_row=int(call_data), max_row=sheet.max_row, min_col=1, max_col=6):
                 if len(keys_list) == 16:
+                    if str(row[0].value)[0:10] == (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"):
+                        max_row = True
+                        break
                     break
                 # Проверяем значение в 3-м столбце
                 elif row[5].value == box_id and str(row[0].value)[0:10] == datetime.now().strftime("%Y-%m-%d"):
@@ -314,7 +315,6 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 back_button = f'bb{int(keys_list[0][2])-1}'
             await database().update_users_with_multiple_entries(callback.message.chat.id, 'warehouses',
                                                                 subscritions_list)
-
         await buttons(bot, callback.message, keyboard_dict=keys_list, back_value='slots',
                       subscritions_list=subscritions_list, back_button=back_button, next_button=next_button).warehouses_buttons()
         # await bot.edit_message_text(f'Выберите интересующие склады:',  chat_id=callback.message.chat.id,
@@ -322,5 +322,101 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
         # await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
         #                                     reply_markup=kb1)
 
+    elif callback.data.startswith('settings_'):
+        if callback.data == 'settings_заглушка':
+            pass
+        else:
+            keys_list = []
+            user_data = await database().search_in_table(callback.message.chat.id, 'users_for_notification')
+            if user_data is False:
+                await database().add_user_in_users_for_notification(callback.message.chat.id,
+                                                                    callback.message.chat.first_name, dates=datetime.now())
+                subscritions_list = []
+            elif user_data[1][0][2]:
+                subscritions_list = user_data[1][0][2].split(', ')
+            else:
+                subscritions_list = []
+            call_data = callback.data[9:]
+            if call_data == 'change':
+                if len(subscritions_list) == 0:
+                    pass
+                else:
+                    wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
+                    sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
+                    for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=1, max_col=6):
+                        if len(keys_list) == len(subscritions_list):
+                            break
+                        # Проверяем значение в 3-м столбце
+                        elif row[2].value in subscritions_list:
+                            keys_list.append(row[3].value)
+                            if row[3].row == sheet.max_row:
+                                break
+                        else:
+                            pass
+                    subscritions_list = [user_data[1][0][3], [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')]
+            else:
+                if len(subscritions_list) == 0:
+                    pass
+                else:
+                    wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
+                    sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
+                    for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=1, max_col=6):
+                        if len(keys_list) == len(subscritions_list):
+                            break
+                        # Проверяем значение в 3-м столбце
+                        elif row[2].value in subscritions_list:
+                            keys_list.append(row[3].value)
+                            if row[3].row == sheet.max_row:
+                                break
+                        else:
+                            pass
+                if call_data == '2':
+                    box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
+                    if "Короба" in box_type_list:
+                        box_type_list.remove('Короба')
+                    else:
+                        box_type_list.append('Короба')
+                    subscritions_list = [user_data[1][0][3], box_type_list]
+                    await database().update_users_with_multiple_entries(callback.message.chat.id,
+                                                                        'type_of_delivery', box_type_list)
+                elif call_data == '5':
+                    box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
+                    if "Монопаллеты" in box_type_list:
+                        box_type_list.remove("Монопаллеты")
+                    else:
+                        box_type_list.append("Монопаллеты")
+                    subscritions_list = [user_data[1][0][3], box_type_list]
+                    await database().update_users_with_multiple_entries(callback.message.chat.id,
+                                                                        'type_of_delivery', box_type_list)
+                elif call_data == '6':
+                    box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
+                    if "Суперсейф" in box_type_list:
+                        box_type_list.remove("Суперсейф")
+                    else:
+                        box_type_list.append("Суперсейф")
+                    subscritions_list = [user_data[1][0][3], box_type_list]
+                    await database().update_users_with_multiple_entries(callback.message.chat.id,
+                                                                        'type_of_delivery', box_type_list)
+                elif call_data == "отсутствует":
+                    box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
+                    if "QR-поставка с коробами" in box_type_list:
+                        box_type_list.remove("QR-поставка с коробами")
+                    else:
+                        box_type_list.append("QR-поставка с коробами")
+                    subscritions_list = [user_data[1][0][3], box_type_list]
+                    await database().update_users_with_multiple_entries(callback.message.chat.id,
+                                                                        'type_of_delivery', box_type_list)
+                elif call_data == "minus":
+                    koef = 1 if user_data[1][0][3] is None else int(user_data[1][0][3]) - 1
+                    subscritions_list = [str(koef), [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')]
+                    await database().update_table_in_users_for_notification(callback.message.chat.id,
+                                                                            {'max_koeff': str(koef)})
+                elif call_data == "plus":
+                    koef = 3 if user_data[1][0][3] is None else int(user_data[1][0][3]) + 1
+                    subscritions_list = [str(koef), [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')]
+                    await database().update_table_in_users_for_notification(callback.message.chat.id,
+                                                                            {'max_koeff': str(koef)})
+            await buttons(bot, callback.message, keyboard_dict=keys_list, back_value='slots',
+                          subscritions_list=subscritions_list).setings_buttons()
     else:
         await callback.message.reply(f'Данный раздел в разработке')

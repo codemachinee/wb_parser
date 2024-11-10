@@ -24,6 +24,8 @@ kb_choice_tovar = InlineKeyboardMarkup(inline_keyboard=[
 kb_back_to_reasons = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🔙 Вернуться к выбору причины', callback_data='PREMIATO')]])
 
+kb_back_to_menu = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='🔙 Вернуться назад', callback_data='slots')]])
 
 kb_choice_reasons = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🚚 Закупка оптом', callback_data='opt')],
@@ -39,7 +41,7 @@ kb_choice_reasons = InlineKeyboardMarkup(inline_keyboard=[
 
 kb_slots_menu = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='📦 Выбор склада', callback_data='warehouse_choice')],
-    [InlineKeyboardButton(text='⚙️ Настройка склада', callback_data='warehouse_settings')],
+    [InlineKeyboardButton(text='⚙️ Настройка склада', callback_data='settings_change')],
     [InlineKeyboardButton(text='🔙 Вернуться назад', callback_data='func_menu')]
 ])
 
@@ -106,63 +108,125 @@ class buttons:  # класс для создания клавиатур разл
         await self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
                                                  reply_markup=kb2)
 
-    async def zayavki_buttons(self):
+    async def setings_buttons(self):
         keys = {}
         keyboard_list = []
-        keys_list = list(self.keyboard_dict[0].keys())
-        if self.back_value != 'razdely_buttons':
-            if self.all_button is not None:
-                add_list = []
-                del_list = []
-                for i in keys_list:
-                    if f'{self.keyboard_dict[1]}_{i}' in self.subscritions_list:
-                        del_list.append(i)
+        if len(self.subscritions_list) == len(self.keyboard_dict) == 0:
+            await self.bot.edit_message_text(
+                text=f'Вы не выбрали ни одного склада', chat_id=self.message.chat.id, message_id=self.message.message_id)
+            await self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
+                                                     reply_markup=kb_back_to_menu)
+        else:
+            if int(self.subscritions_list[0]) == 1:
+                keys_list = [['📦 Типы приемки:', 'заглушка'],
+                             ["Короба", "2"], ["Монопаллеты", "5"],
+                             ["Суперсейф", "6"], ["QR-поставка", "отсутствует"],
+                             [f"💸 Коэффициент приемки: до {self.subscritions_list[0]}", 'заглушка'],
+                             [f"➕", "plus"]]
+            elif int(self.subscritions_list[0]) == 8:
+                keys_list = [['📦 Типы приемки:', 'заглушка'],
+                             ["Короба", "2"], ["Монопаллеты", "5"],
+                             ["Суперсейф", "6"], ["QR-поставка", "отсутствует"],
+                             [f"💸 Коэффициент приемки: до {self.subscritions_list[0]}", 'заглушка'],
+                             [f"➖", "minus"]]
+            else:
+                keys_list = [['📦 Типы приемки:', 'заглушка'],
+                             ["Короба", "2"], ["Монопаллеты", "5"],
+                             ["Суперсейф", "6"], ["QR-поставка", "отсутствует"],
+                             [f"💸 Коэффициент приемки: до {self.subscritions_list[0]}", 'заглушка'],
+                             [f"➖", "minus"], [f"➕", "plus"]]
+            for i in keys_list:
+                index = keys_list.index(i)
+                if len(self.subscritions_list) != 0 and (f'{i[0]}' in self.subscritions_list[1] or f'{i[0]} с коробами'
+                                                         in self.subscritions_list[1]):
+                    button = types.InlineKeyboardButton(text=f"🔘{i[0]}", callback_data=f"settings_{i[1]}")
+                    keys[f'but{index}'] = button
+                else:
+                    button = types.InlineKeyboardButton(text=i[0], callback_data=f"settings_{i[1]}")
+                    keys[f'but{index}'] = button
+
+                if len(keys_list) == 8:
+                    if index == 0 or index == 5:
+                        keyboard_list.append([button])
+                    elif index == 2 or index == 4 or index == 7:
+                        previous_button = keys[f'but{index - 1}']
+                        keyboard_list.append([previous_button, button])
                     else:
-                        add_list.append(i)
-                if len(del_list) == 0:
-                    add_button = types.InlineKeyboardButton(text="📁 Выбрать все", callback_data=f'{self.keyboard_dict[1]}_add_{self.all_button}')
-                    keyboard_list.append([add_button])
-                elif len(add_list) == 0:
-                    del_button = types.InlineKeyboardButton(text="🗑 Удалить все", callback_data=f'{self.keyboard_dict[1]}_del_{self.all_button}')
-                    keyboard_list.append([del_button])
+                        pass
                 else:
-                    add_button = types.InlineKeyboardButton(text="📁 Выбрать все", callback_data=f'{self.keyboard_dict[1]}_add_{self.all_button}')
-                    del_button = types.InlineKeyboardButton(text="🗑 Удалить все", callback_data=f'{self.keyboard_dict[1]}_del_{self.all_button}')
-                    keyboard_list.append([add_button, del_button])
-            else:
-                pass
+                    if index == 0 or index >= 5:
+                        keyboard_list.append([button])
+                    elif index == 2 or index == 4:
+                        previous_button = keys[f'but{index - 1}']
+                        keyboard_list.append([previous_button, button])
+                    else:
+                        pass
+            back_value_button = types.InlineKeyboardButton(text="↩️ Вернуться в меню", callback_data=self.back_value)
+            keyboard_list.append([back_value_button])
+            kb2 = types.InlineKeyboardMarkup(inline_keyboard=keyboard_list, resize_keyboard=True)
+            await self.bot.edit_message_text(text=f'Выбраны следующие склады: {", ".join(self.keyboard_dict)}\n\n'
+                                             f'Настройте необходимые параметры:', chat_id=self.message.chat.id,
+                                             message_id=self.message.message_id)
+            await self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
+                                                     reply_markup=kb2)
 
-        if keys_list[0] == 'date':
-            keys_list = keys_list[1:]
-
-        for i in keys_list:
-            index = keys_list.index(i)
-            if self.subscritions_list is not None and f'{self.keyboard_dict[1]}_{i}' in self.subscritions_list:
-                button = types.InlineKeyboardButton(text=f"🔘{self.keyboard_dict[0][i]['name']}",
-                                                    callback_data=f"{self.keyboard_dict[1]}_{self.keyboard_dict[0][i]['id']}")
-                keys[f'but{index}'] = button
-            else:
-                button = types.InlineKeyboardButton(text=self.keyboard_dict[0][i]['name'],
-                                                    callback_data=f"{self.keyboard_dict[1]}_{self.keyboard_dict[0][i]['id']}")
-                keys[f'but{index}'] = button
-
-            # Группируем кнопки попарно
-            if index > 0 and index % 2 != 0:
-                previous_button = keys[f'but{index - 1}']
-                if len(self.keyboard_dict[0][i]['name']) <= 16 and len(
-                        self.keyboard_dict[0][keys_list[index - 1]]['name']) <= 16:
-                    keyboard_list.append([previous_button, button])
-                else:
-                    keyboard_list.append([previous_button])
-                    keyboard_list.append([button])
-            elif index == (len(keys_list) - 1):
-                keyboard_list.append([button])
-        if self.back_value is not None:
-            back_button = types.InlineKeyboardButton(text="↩️ Вернуться назад", callback_data=self.back_value)
-            keyboard_list.append([back_button])
-        kb2 = types.InlineKeyboardMarkup(inline_keyboard=keyboard_list, resize_keyboard=True)
-
-        await self.bot.edit_message_text(text=f'Выберите категории рассылки которых хотите получать (выбранные категории '
-                                         'отмечены: 🔘)', chat_id=self.message.chat.id, message_id=self.message.message_id)
-        await self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
-                                                 reply_markup=kb2)
+    # async def zayavki_buttons(self):
+    #     keys = {}
+    #     keyboard_list = []
+    #     keys_list = list(self.keyboard_dict[0].keys())
+    #     if self.back_value != 'razdely_buttons':
+    #         if self.all_button is not None:
+    #             add_list = []
+    #             del_list = []
+    #             for i in keys_list:
+    #                 if f'{self.keyboard_dict[1]}_{i}' in self.subscritions_list:
+    #                     del_list.append(i)
+    #                 else:
+    #                     add_list.append(i)
+    #             if len(del_list) == 0:
+    #                 add_button = types.InlineKeyboardButton(text="📁 Выбрать все", callback_data=f'{self.keyboard_dict[1]}_add_{self.all_button}')
+    #                 keyboard_list.append([add_button])
+    #             elif len(add_list) == 0:
+    #                 del_button = types.InlineKeyboardButton(text="🗑 Удалить все", callback_data=f'{self.keyboard_dict[1]}_del_{self.all_button}')
+    #                 keyboard_list.append([del_button])
+    #             else:
+    #                 add_button = types.InlineKeyboardButton(text="📁 Выбрать все", callback_data=f'{self.keyboard_dict[1]}_add_{self.all_button}')
+    #                 del_button = types.InlineKeyboardButton(text="🗑 Удалить все", callback_data=f'{self.keyboard_dict[1]}_del_{self.all_button}')
+    #                 keyboard_list.append([add_button, del_button])
+    #         else:
+    #             pass
+    #
+    #     if keys_list[0] == 'date':
+    #         keys_list = keys_list[1:]
+    #
+    #     for i in keys_list:
+    #         index = keys_list.index(i)
+    #         if self.subscritions_list is not None and f'{self.keyboard_dict[1]}_{i}' in self.subscritions_list:
+    #             button = types.InlineKeyboardButton(text=f"🔘{self.keyboard_dict[0][i]['name']}",
+    #                                                 callback_data=f"{self.keyboard_dict[1]}_{self.keyboard_dict[0][i]['id']}")
+    #             keys[f'but{index}'] = button
+    #         else:
+    #             button = types.InlineKeyboardButton(text=self.keyboard_dict[0][i]['name'],
+    #                                                 callback_data=f"{self.keyboard_dict[1]}_{self.keyboard_dict[0][i]['id']}")
+    #             keys[f'but{index}'] = button
+    #
+    #         # Группируем кнопки попарно
+    #         if index > 0 and index % 2 != 0:
+    #             previous_button = keys[f'but{index - 1}']
+    #             if len(self.keyboard_dict[0][i]['name']) <= 16 and len(
+    #                     self.keyboard_dict[0][keys_list[index - 1]]['name']) <= 16:
+    #                 keyboard_list.append([previous_button, button])
+    #             else:
+    #                 keyboard_list.append([previous_button])
+    #                 keyboard_list.append([button])
+    #         elif index == (len(keys_list) - 1):
+    #             keyboard_list.append([button])
+    #     if self.back_value is not None:
+    #         back_button = types.InlineKeyboardButton(text="↩️ Вернуться назад", callback_data=self.back_value)
+    #         keyboard_list.append([back_button])
+    #     kb2 = types.InlineKeyboardMarkup(inline_keyboard=keyboard_list, resize_keyboard=True)
+    #
+    #     await self.bot.edit_message_text(text=f'Выберите категории рассылки которых хотите получать (выбранные категории '
+    #                                      'отмечены: 🔘)', chat_id=self.message.chat.id, message_id=self.message.message_id)
+    #     await self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
+    #                                              reply_markup=kb2)

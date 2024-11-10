@@ -9,7 +9,7 @@ create_users_table_users = ("CREATE TABLE IF NOT EXISTS users (telegram_id TEXT,
 
 create_users_table_users_for_notification = ("CREATE TABLE IF NOT EXISTS users_for_notification (telegram_id TEXT NOT "
                                              "NULL, name TEXT DEFAULT NULL, warehouses TEXT DEFAULT NULL, max_koeff	"
-                                             "INTEGER DEFAULT NULL, type_of_delivery INTEGER DEFAULT NULL, dates TEXT);")
+                                             "INTEGER DEFAULT NULL, type_of_delivery TEXT DEFAULT NULL, dates TEXT);")
 
 
 class database:
@@ -43,11 +43,11 @@ class database:
         self.base.commit()
         self.base.close()
 
-    async def update_table_in_users_for_notification(self, telegram_id, update_data, warehouses):
+    async def update_table_in_users_for_notification(self, telegram_id, update_data):
         set_clause = ", ".join([f"{key}=?" for key in update_data.keys()])
         # Выполняем запрос, передавая значения для обновления и telegram_id
-        self.cur.execute(f"UPDATE users SET {set_clause} WHERE telegram_id=? AND warehouses=?",
-                         (*update_data.values(), telegram_id, warehouses))
+        self.cur.execute(f"UPDATE users_for_notification SET {set_clause} WHERE telegram_id=?",
+                         (*update_data.values(), telegram_id))
         self.base.commit()
         self.base.close()
 
@@ -92,6 +92,13 @@ class database:
         self.base.commit()
         self.base.close()  # Подтверждаем транзакцию
         return [True, "Записи успешно обновлены."]
+
+    async def return_base_data(self):
+        self.cur.execute("SELECT telegram_id, warehouses, max_koeff, type_of_delivery FROM users_for_notification")
+        rows = self.cur.fetchall()
+        if len(rows) == 0:
+            return False
+        return rows
 
     def schedule_task(self):
         self.scheduler.add_job(self.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
