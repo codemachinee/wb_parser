@@ -1,6 +1,9 @@
 import requests
 import uuid
 import os
+
+from loguru import logger
+
 from passwords import *
 saved_message_salute = []
 
@@ -41,7 +44,8 @@ async def save_audio(bot, message):
         try:
             await bot.send_message(message.chat.id, f'{" ".join(response.json()["result"])}',
                                    message_thread_id=message.message_thread_id)
-        except Exception:
+        except Exception as e:
+            logger.exception('Ошибка salute/save_audio', e, response.json())
             await bot.send_message(message.chat.id, f'Ошибка. Логи:{response.json()}',
                                    message_thread_id=message.message_thread_id)
         audio_file.close()
@@ -109,7 +113,8 @@ async def Artur(bot, message, text):
             "content": f'{str(answer)}'})
         if len(saved_message_salute) >= 8:
             del saved_message_salute[0:5]
-    except Exception:
+    except Exception as e:
+        logger.exception('Ошибка salute/Artur', e, response.text)
         await bot.send_message(message.chat.id, f"Ошибка\n"
                                                      f"Логи:{response.text}", message_thread_id=message.message_thread_id)
         del saved_message_salute[-1]

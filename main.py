@@ -6,6 +6,20 @@ import math
 from salute import *
 from FSM import step_message
 from callbacks import *
+from loguru import logger
+
+# Удаляем стандартный обработчик
+logger.remove()
+# Настраиваем логирование в файл с ограничением количества файлов
+logger.add(
+    "loggs.txt",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+    level="INFO",
+    rotation="10 MB",  # Ротация файла каждые 10 MB
+    retention="10 days",  # Хранить только 5 последних логов
+    compression="zip"  # Сжимать старые логи в архив
+)
+
 # token = lemonade
 token = codemashine_test
 
@@ -155,8 +169,9 @@ async def chek_message(message):
                         await bot.edit_message_text(f'Спасибо за обращение, с Вами скоро свяжутся.', message.chat.id,
                                                     mes.message_id)
                     except Exception as e:
-                        await bot.send_message(admin_account, f'Исключение вызванное проблемами подключения к '
-                                                              f'гугл-таблице: {e}')
+                        logger.exception('Исключение вызванное проблемами подключения к гугл-таблице', e)
+                        await bot.send_message(loggs_acc, f'Исключение вызванное проблемами подключения к '
+                                                               f'гугл-таблице: {e}')
                 else:
                     await bot.edit_message_text(f'Пожалуйста выберите причину обращения:', message.chat.id,
                                                 mes.message_id, reply_markup=kb_choice_reasons)
@@ -167,7 +182,11 @@ async def chek_message(message):
 
 @dp.message(F.voice, F.chat.type == 'private')
 async def chek_message(v):
-    await save_audio(bot, v)
+    try:
+        await save_audio(bot, v)
+    except Exception as e:
+        logger.exception('Ошибка в main/save_audio', e)
+        await bot.send_message(loggs_acc, f'Ошибка в main/save_audio: {e}')
 
 
 async def send_news():
@@ -184,51 +203,61 @@ async def send_news():
                         await bot.send_message(group_id, f'{i[n * 1020:(n + 1) * 1020]}', message_thread_id=343,
                                                parse_mode='HTML')
     except Exception as e:
-        await bot.send_message(admin_id, f'Ошибка в фyкции send_news: {e}')
+        logger.exception('Ошибка в main/send_news', e)
+        await bot.send_message(loggs_acc, f'Ошибка в фyкции send_news: {e}')
 
 
 async def search_warehouses():
-    base_data = await database().return_base_data()
-    if base_data is False:
-        pass
-    else:
-        for i in base_data:
-            if len(i[1]) != 0 and len(i[3]) != 0:
-                warehouses_list = i[1].split(', ')
-                wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
-                sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
-                for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=1, max_col=6):
-                    if str(row[2].value) in warehouses_list:
-                        if str(row[4].value) == i[3]:
-                            warehouses_list.remove(str(row[2].value))
-                            if str(row[1].value) != '-1' and int(row[1].value) <= int(i[2]):
-                                await bot.send_message(int(i[0]), f'<b>Появился слот на приемку товара!</b>\n\n'
-                                                                  f'<b>склад:</b> {row[3].value}\n'
-                                                                  f'<b>коэффициент приемки:</b> {row[1].value}\n'
-                                                                  f'<b>дата:</b> {row[0].value}\n\n'
-                                                                  f'[создать поставку](https://seller.wildberries.ru'
-                                                                  f'/supplies-management/new-supply/goods?draftID='
-                                                                  f'de3416a0-28de-4ae1-9e6e-0e2f18d63ce9)',
-                                                       parse_mode="Markdown")
-                                if len(warehouses_list) == 0:
-                                    break
+    try:
+        base_data = await database().return_base_data()
+        if base_data is False:
+            pass
+        else:
+            for i in base_data:
+                mess_counter = 0
+                if len(i[1]) != 0 and len(i[3]) != 0:
+                    warehouses_list = i[1].split(', ')
+                    mess_max = len(warehouses_list) * 7 * len(i[3].split(', '))
+                    await parse_date().get_coeffs_warehouses()
+                    wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
+                    sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
+                    for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=1, max_col=6):
+                        if str(row[2].value) in warehouses_list:
+                            if str(row[4].value) in i[3]:
+                                mess_counter += 1
+                                # if int(row[1].value) <= int(i[2]):
+                                if str(row[1].value) != '-1' and int(row[1].value) <= int(i[2]):
+                                    await bot.send_message(int(i[0]), f'*Появился слот на приемку товара!*\n\n'
+                                                                      f'*склад:* {row[3].value}\n'
+                                                                      f'*коэффициент приемки:* {row[1].value}\n'
+                                                                      f'*дата:* {row[0].value}\n\n'
+                                                                      f'[создать поставку](https://seller.wildberries.ru'
+                                                                      f'/supplies-management/new-supply/goods?draftID='
+                                                                      f'de3416a0-28de-4ae1-9e6e-0e2f18d63ce9)',
+                                                           parse_mode="Markdown")
+                                    if mess_counter >= mess_max:
+                                        break
+                                else:
+                                    if mess_counter >= mess_max:
+                                        break
                             else:
-                                if len(warehouses_list) == 0:
-                                    break
+                                pass
                         else:
                             pass
-                    else:
-                        pass
 
-            else:
-                pass
+                else:
+                    pass
+    except Exception as e:
+        logger.exception('Ошибка в main/search_warehouses', e)
+        await bot.send_message(loggs_acc, f'Ошибка в main/search_warehouses: {e}')
 
 
 async def main():
-    # scheduler = AsyncIOScheduler()
+    scheduler = AsyncIOScheduler()
     # scheduler.add_job(send_news, trigger="interval", minutes=10)
+    scheduler.add_job(search_warehouses, trigger="interval", seconds=15)
     database().schedule_task()
-    # scheduler.start()
+    scheduler.start()
     await dp.start_polling(bot)
 
 
@@ -236,5 +265,6 @@ if __name__ == '__main__':
     asyncio.run(database().delete_all_users())
     try:
         asyncio.run(main())
+        logger.info('включение бота')
     except KeyboardInterrupt:
-        print('Exit')
+        logger.exception('выключение бота')

@@ -222,13 +222,12 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             subscritions_list = user_data[1][0][2].split(', ')
         else:
             subscritions_list = []
-        wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
-        sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
-        # Проходим по строкам начиная с первой строки (или с другой, если есть заголовки)
-        box_id = str(sheet.cell(2, 6).value)
         call_data = callback.data[10:]
         if call_data == 'choice':
             await parse_date().get_coeffs_warehouses()
+            wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
+            sheet = wb.active
+            box_id = str(sheet.cell(2, 6).value)
             for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=1, max_col=6):
                 if len(keys_list) == 16:
                     break
@@ -247,6 +246,9 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             back_button = None
 
         elif call_data[0:2] == 'nb':
+            wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
+            sheet = wb.active
+            box_id = str(sheet.cell(2, 6).value)
             call_data = call_data[2:]
             for row in sheet.iter_rows(min_row=int(call_data), max_row=sheet.max_row, min_col=1, max_col=6):
                 if len(keys_list) == 16:
@@ -269,6 +271,9 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             back_button = f'bb{int(keys_list[0][2])-1}'
         elif call_data[0:2] == 'bb':
             call_data = call_data[2:]
+            wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
+            sheet = wb.active
+            box_id = str(sheet.cell(2, 6).value)
             for row in reversed(list(sheet.iter_rows(min_row=2, max_row=int(call_data), min_col=1, max_col=6))):
                 if len(keys_list) == 16:
                     break
@@ -287,6 +292,9 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 back_button = f'bb{int(keys_list[0][2])-1}'
         else:
             call_data = call_data.split('_')
+            wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
+            sheet = wb.active
+            box_id = str(sheet.cell(2, 6).value)
             if call_data[0] == 'del':
                 subscritions_list = []
             elif str(sheet.cell(int(call_data[0]), 3).value) in subscritions_list:
@@ -372,6 +380,8 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                             pass
                 if call_data == '2':
                     box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
+                    if box_type_list[0] == '':
+                        box_type_list = box_type_list[1:]
                     if "Короба" in box_type_list:
                         box_type_list.remove('Короба')
                     else:
@@ -381,6 +391,8 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                                                         'type_of_delivery', box_type_list)
                 elif call_data == '5':
                     box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
+                    if box_type_list[0] == '':
+                        box_type_list = box_type_list[1:]
                     if "Монопаллеты" in box_type_list:
                         box_type_list.remove("Монопаллеты")
                     else:
@@ -390,6 +402,8 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                                                         'type_of_delivery', box_type_list)
                 elif call_data == '6':
                     box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
+                    if box_type_list[0] == '':
+                        box_type_list = box_type_list[1:]
                     if "Суперсейф" in box_type_list:
                         box_type_list.remove("Суперсейф")
                     else:
@@ -399,6 +413,8 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                                                         'type_of_delivery', box_type_list)
                 elif call_data == "отсутствует":
                     box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
+                    if box_type_list[0] == '':
+                        box_type_list = box_type_list[1:]
                     if "QR-поставка с коробами" in box_type_list:
                         box_type_list.remove("QR-поставка с коробами")
                     else:

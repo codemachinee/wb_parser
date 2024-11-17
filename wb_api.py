@@ -3,6 +3,9 @@ import asyncio
 import requests
 from bs4 import BeautifulSoup
 from datetime import date, timedelta
+
+from loguru import logger
+
 from passwords import *
 from exel import *
 
@@ -94,6 +97,7 @@ class parse_date:
                              'является Вашим складом': f'{"является" if i["selected"] is True else "не является"}'})
             await data_to_exel("tables/список складов wb.xlsx", exel_headers, data, headers_rus=None)
         except Exception as e:
+            logger.exception(f'Ошибка wb_api/get_wb_warehouses', e)
             return e
 
     # мои склады
@@ -112,6 +116,7 @@ class parse_date:
                                  f'{"доставка на склад Wildberries" if i["deliveryType"] == 1 else ("доставка силами продавца" if i["deliveryType"] == 2 else "доставка курьером WB")}'})
             await data_to_exel("tables/список моих складов.xlsx", exel_headers, data, headers_rus=None)
         except Exception as e:
+            logger.exception(f'Ошибка wb_api/get_my_warehouses', e)
             return e
 
     # список товаров
@@ -135,6 +140,7 @@ class parse_date:
                              'скидка %': f'{i["discount"]}', 'своя цена для размеров': f'{i["editableSizePrice"]}'})
             await data_to_exel("tables/список товаров.xlsx", exel_headers, data, headers_rus=None)
         except Exception as e:
+            logger.exception(f'Ошибка wb_api/get_goods_list', e)
             return e
 
     # список поставок за все время
@@ -150,6 +156,7 @@ class parse_date:
             for i in response.json()['supplies']:
                 print(i)
         except Exception as e:
+            logger.exception(f'Ошибка wb_api/get_supplies_list', e)
             return e
 
     # список поставок на текущий момент
@@ -168,6 +175,7 @@ class parse_date:
                             "quantity", "totalPrice", "dateClose", "warehouseName", "nmId", "status"]
             await data_to_exel("tables/Отчет о поставках.xlsx", exel_headers, response.json(), exel_headers_rus)
         except Exception as e:
+            logger.exception(f'Ошибка wb_api/get_supplier_list', e)
             return e
 
     # остатки товаров на складах на текущий момент
@@ -182,6 +190,7 @@ class parse_date:
             for i in response.json():
                 print(i)
         except Exception as e:
+            logger.exception(f'Ошибка wb_api/get_stocks_list', e)
             return e
 
     async def reportDetailByPeriod(self):
@@ -197,6 +206,7 @@ class parse_date:
             for i in response.json():
                 print(i)
         except Exception as e:
+            logger.exception(f'Ошибка wb_api/reportDetailByPeriod', e)
             return e
 
     # получение списка неотвеченных вопросов по товарам
@@ -212,6 +222,7 @@ class parse_date:
             with open("tables/report_questions.xlsx", "wb") as f:
                 f.write(file_content)
         except Exception as e:
+            logger.exception(f'Ошибка wb_api/report_questions', e)
             return e
 
     # получение списка необработанных отзывов по товарам
@@ -227,6 +238,7 @@ class parse_date:
             with open('tables/report_feedbacks.xlsx', "wb") as f:
                 f.write(file_content)
         except Exception as e:
+            logger.exception(f'Ошибка wb_api/report_feedbacks', e)
             return e
 
     # тарифы на коробы
@@ -245,6 +257,7 @@ class parse_date:
             await data_to_exel("tables/Тарифы на короб.xlsx", exel_headers,
                                response.json()['response']['data']['warehouseList'], exel_headers_rus)
         except Exception as e:
+            logger.exception(f'Ошибка wb_api/get_tariffs_box', e)
             return e
 
     # тарифы на монопалет
@@ -263,6 +276,7 @@ class parse_date:
             await data_to_exel("tables/Тарифы на монопалет.xlsx", exel_headers,
                                response.json()['response']['data']['warehouseList'], exel_headers_rus)
         except Exception as e:
+            logger.exception(f'Ошибка wb_api/get_tariffs_pallet', e)
             return e
 
     # тарифы на возвраты
@@ -285,6 +299,7 @@ class parse_date:
             await data_to_exel("tables/Тарифы на возвраты.xlsx", exel_headers,
                                response.json()['response']['data']['warehouseList'], exel_headers_rus)
         except Exception as e:
+            logger.exception(f'Ошибка wb_api/get_tariffs_returns', e)
             return e
 
     async def get_coeffs_warehouses(self):
@@ -307,6 +322,7 @@ class parse_date:
                                data)
             return True
         except Exception as e:
+            logger.exception(f'Ошибка wb_api/get_coeffs_warehouses', e)
             return e
 
 

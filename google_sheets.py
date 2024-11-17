@@ -1,5 +1,7 @@
 # библиотека работы с гугл таблицами
 import gspread
+from loguru import logger
+
 from passwords import *
 admin_account = admin_id
 # библиотека проверки даты
@@ -29,7 +31,8 @@ class clients_base:  # класс базы данных
                                        str(datetime.now(moscow_tz).strftime('%d.%m.%y %H:%M'))]])
             await self.chec_and_record_in_client_base(reasons, reason_text)
         except Exception as e:
-            await self.bot.send_message(admin_account, f'Исключение вызванное функцией проверки и записи клиента в '
+            logger.exception('Исключение вызванное функцией проверки и записи клиента в гугл-таблицу', e)
+            await self.bot.send_message(loggs_acc, f'Исключение вызванное функцией проверки и записи клиента в '
                                                        f'гугл-таблицу: {e}')
 
     async def chec_and_record_in_client_base(self, reasons=None, reason_text=None):  # функция поиска и записи в базу
@@ -44,16 +47,18 @@ class clients_base:  # класс базы данных
                                                                                           reason_text,
                                                   str(datetime.now(moscow_tz).strftime('%d.%m.%y %H:%M'))]])
         except Exception as e:
-            await self.bot.send_message(admin_account, f'Исключение вызванное функцией проверки и записи клиента в '
-                                                       f'гугл-таблицу: {e}')
+            logger.exception('Исключение вызванное функцией проверки и записи клиента в гугл-таблицу', e)
+            await self.bot.send_message(loggs_acc, f'Исключение вызванное функцией проверки и записи клиента в '
+                                                   f'гугл-таблицу: {e}')
 
     async def rasylka_v_bazu(self):  # функция рассылки постов в базы
         telegram_ids_values_list = self.worksheet_client_base.col_values(1)
         telegram_names_values_list = self.worksheet_client_base.col_values(2)
         for i in range(1, len(telegram_ids_values_list)):
-            # try:
-            await self.bot.copy_message(telegram_ids_values_list[i], admin_account, self.message.message_id)
-                #self.bot.send_message(self.worksheet.col_values(1)[i], 'Участвовать в акции?', reply_markup=kb6)
-            # except Exception:
-            #     await self.bot.send_message(admin_account, f'Босс, с @{telegram_names_values_list[i]} проблема{Exception}')
+            try:
+                await self.bot.copy_message(telegram_ids_values_list[i], admin_account, self.message.message_id)
+                    #self.bot.send_message(self.worksheet.col_values(1)[i], 'Участвовать в акции?', reply_markup=kb6)
+            except Exception as e:
+                logger.exception('Рассылка в базу данных', f'Босс, с @{telegram_names_values_list[i]} проблема{e}')
+                await self.bot.send_message(loggs_acc, f'Босс, с @{telegram_names_values_list[i]} проблема{e}')
         await self.bot.send_message(self.message.chat.id, 'Босс, рассылка в базу клиентов выполнена ✅')
