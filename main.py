@@ -12,12 +12,25 @@ from loguru import logger
 logger.remove()
 # Настраиваем логирование в файл с ограничением количества файлов
 logger.add(
-    "loggs.txt",
+    "loggs.log",
     format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
     level="INFO",
-    rotation="10 MB",  # Ротация файла каждые 10 MB
+    rotation="5 MB",  # Ротация файла каждые 10 MB
     retention="10 days",  # Хранить только 5 последних логов
-    compression="zip"  # Сжимать старые логи в архив
+    compression="zip",  # Сжимать старые логи в архив
+    backtrace=True,     # Сохранение трассировки ошибок
+    diagnose=True       # Подробный вывод
+)
+
+logger.add(
+    "errors.log",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+    level="ERROR",
+    rotation="5 MB",
+    retention="10 days",
+    compression="zip",
+    backtrace=True,     # Сохранение трассировки ошибок
+    diagnose=True       # Подробный вывод
 )
 
 # token = lemonade
@@ -215,7 +228,7 @@ async def search_warehouses():
         else:
             for i in base_data:
                 mess_counter = 0
-                if len(i[1]) != 0 and len(i[3]) != 0:
+                if len(i[1]) is not None and len(i[3]) is not None:
                     warehouses_list = i[1].split(', ')
                     mess_max = len(warehouses_list) * 7 * len(i[3].split(', '))
                     await parse_date().get_coeffs_warehouses()
@@ -229,6 +242,7 @@ async def search_warehouses():
                                 if str(row[1].value) != '-1' and int(row[1].value) <= int(i[2]):
                                     await bot.send_message(int(i[0]), f'*Появился слот на приемку товара!*\n\n'
                                                                       f'*склад:* {row[3].value}\n'
+                                                                      f'*тип поставки:* {row[4].value}\n'
                                                                       f'*коэффициент приемки:* {row[1].value}\n'
                                                                       f'*дата:* {row[0].value}\n\n'
                                                                       f'[создать поставку](https://seller.wildberries.ru'
@@ -264,7 +278,7 @@ async def main():
 if __name__ == '__main__':
     asyncio.run(database().delete_all_users())
     try:
-        asyncio.run(main())
         logger.info('включение бота')
+        asyncio.run(main())
     except KeyboardInterrupt:
         logger.exception('выключение бота')

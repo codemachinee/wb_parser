@@ -9,7 +9,7 @@ create_users_table_users = ("CREATE TABLE IF NOT EXISTS users (telegram_id TEXT,
 
 create_users_table_users_for_notification = ("CREATE TABLE IF NOT EXISTS users_for_notification (telegram_id TEXT NOT "
                                              "NULL, name TEXT DEFAULT NULL, warehouses TEXT DEFAULT NULL, max_koeff	"
-                                             "INTEGER DEFAULT NULL, type_of_delivery TEXT DEFAULT NULL, dates TEXT);")
+                                             "INTEGER DEFAULT 2, type_of_delivery TEXT DEFAULT NULL, dates TEXT);")
 
 
 class database:

@@ -380,7 +380,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                             pass
                 if call_data == '2':
                     box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
-                    if box_type_list[0] == '':
+                    if len(box_type_list) != 0 and box_type_list[0] == '':
                         box_type_list = box_type_list[1:]
                     if "Короба" in box_type_list:
                         box_type_list.remove('Короба')
@@ -391,7 +391,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                                                         'type_of_delivery', box_type_list)
                 elif call_data == '5':
                     box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
-                    if box_type_list[0] == '':
+                    if len(box_type_list) != 0 and box_type_list[0] == '':
                         box_type_list = box_type_list[1:]
                     if "Монопаллеты" in box_type_list:
                         box_type_list.remove("Монопаллеты")
@@ -402,7 +402,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                                                         'type_of_delivery', box_type_list)
                 elif call_data == '6':
                     box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
-                    if box_type_list[0] == '':
+                    if len(box_type_list) != 0 and box_type_list[0] == '':
                         box_type_list = box_type_list[1:]
                     if "Суперсейф" in box_type_list:
                         box_type_list.remove("Суперсейф")
@@ -413,7 +413,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                                                         'type_of_delivery', box_type_list)
                 elif call_data == "отсутствует":
                     box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
-                    if box_type_list[0] == '':
+                    if len(box_type_list) != 0 and box_type_list[0] == '':
                         box_type_list = box_type_list[1:]
                     if "QR-поставка с коробами" in box_type_list:
                         box_type_list.remove("QR-поставка с коробами")
