@@ -54,7 +54,7 @@ class parse_date:
                 file_id = file.read()
                 params = {
                     # "from": f'{date.today() - timedelta(1)}'
-                    "fromID": f"{file_id[:4]}"
+                    "fromID": f"{file_id}"
                 }
             BASE_URL = 'http://suppliers-api.wildberries.ru/api/communications/v1/news'
             response = requests.get(BASE_URL, headers=headers, params=params)
@@ -64,7 +64,7 @@ class parse_date:
                         data.append(f"<em>{i['date']}</em>\n<strong>{i['header']}</strong>\n\n"
                                     f"{BeautifulSoup(i['text'], 'html.parser').get_text()}")
                         if i == response.json()['data'][-1]:
-                            file.write(f"{i['id']}")
+                            file.write(f"{int(i['id']+1)}")
                         else:
                             pass
                     print(data)
@@ -73,10 +73,11 @@ class parse_date:
                     with open('news.txt', 'w') as file:
                         file.write(f"{file_id}")
                         return None
-        except requests.exceptions.JSONDecodeError:
+        except requests.exceptions.JSONDecodeError as e:
             with open('news.txt', 'w') as file:
                 file.write(f"{file_id}")
                 pass
+            logger.exception('Ошибка wb_api/send_news: JSONDecodeError', e)
             #     data.append(f'Исключение: {e}')
             # return data
 
@@ -329,7 +330,7 @@ class parse_date:
 # parse_date().get_tovar_card()
 # parse_date().get_price()
 # asyncio.run(parse_date().get_coeffs_warehouses())
-# asyncio.run(parse_date().get_news())
+asyncio.run(parse_date().get_news())
 # asyncio.run(parse_date().get_wb_warehouses())
 # parse_date().get_my_warehouses()
 # parse_date().get_goods_list()
