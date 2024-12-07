@@ -49,7 +49,7 @@ async def start(message):
                                f'/help - справка по боту', message_thread_id=message.message_thread_id,
                                parse_mode='html')
     else:
-        data_from_database = await database().search_in_table(message.chat.id)
+        data_from_database = await Database().search_in_table(message.chat.id)
         if data_from_database is not False and data_from_database[0][4] >= 6:
             pass
         else:
@@ -77,7 +77,7 @@ async def help(message):
                                message_thread_id=message.message_thread_id,
                                parse_mode='html')
     else:
-        data_from_database = await database().search_in_table(message.chat.id)
+        data_from_database = await Database().search_in_table(message.chat.id)
         if data_from_database is not False and data_from_database[0][4] >= 6:
             pass
         else:
@@ -103,7 +103,7 @@ async def functions(message):
 @dp.message(Command(commands='reset_cash'))
 async def functions(message):
     if message.chat.id in admins_list:
-        await database().delete_all_users()
+        await Database().delete_all_users()
         await bot.send_message(message.chat.id, 'Кэш очищен',
                                message_thread_id=message.message_thread_id)
     else:
@@ -153,17 +153,17 @@ async def chek_message(message):
                                                                                 1).replace(' давинчи', '', 1)
             await Artur(bot, message, b)
     elif message.chat.id not in admins_list:
-        data_from_database = await database().search_in_table(message.chat.id)
+        data_from_database = await Database().search_in_table(message.chat.id)
         if data_from_database is not False:
             if data_from_database[0][4] >= 6:
                 pass
             elif data_from_database[0][4] >= 4:
                 await bot.send_message(message.chat.id, f'Превышен дневной лимит обращений.')
-                await database().update_table(telegram_id=message.chat.id,
+                await Database().update_table(telegram_id=message.chat.id,
                                               update_number_of_requests=data_from_database[0][4] + 1)
             else:
                 mes = await bot.send_message(message.chat.id, 'Загрузка..⏳')
-                await database().update_table(telegram_id=message.chat.id,
+                await Database().update_table(telegram_id=message.chat.id,
                                               update_number_of_requests=data_from_database[0][4] + 1)
                 if data_from_database[0][2]:
                     try:
@@ -222,7 +222,7 @@ async def send_news():
 
 async def search_warehouses():
     try:
-        base_data = await database().return_base_data()
+        base_data = await Database().return_base_data()
         if base_data is False:
             pass
         else:
@@ -270,13 +270,17 @@ async def main():
     scheduler = AsyncIOScheduler()
     # scheduler.add_job(send_news, trigger="interval", minutes=10)
     scheduler.add_job(search_warehouses, trigger="interval", seconds=15)
-    database().schedule_task()
+    Database().schedule_task()
     scheduler.start()
     await dp.start_polling(bot)
 
 
 if __name__ == '__main__':
-    asyncio.run(database().delete_all_users())
+    try:
+        asyncio.run(Database().delete_all_users())
+    except Exception as e:
+        logger.exception('Ошибка в main/asyncio.run(Database().delete_all_users())', e)
+        asyncio.run(bot.send_message(loggs_acc, f'Ошибка в main/search_warehouses: {e}'))
     try:
         logger.info('включение бота')
         asyncio.run(main())

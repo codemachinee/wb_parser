@@ -2,7 +2,7 @@ import openpyxl
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from database import database
+from database import Database
 from wb_api import parse_date
 
 kb1 = InlineKeyboardMarkup(inline_keyboard=[

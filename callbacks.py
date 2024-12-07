@@ -92,16 +92,16 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
     elif callback.data == 'PREMIATO':
         mes = await bot.edit_message_text(f'Пожалуйста выберите причину обращения', callback.message.chat.id,
                                           callback.message.message_id, reply_markup=kb_choice_reasons)
-        if await database().search_in_table(callback.message.chat.id) is not False:
-            data_from_database = await database().search_in_table(callback.message.chat.id)
+        if await Database().search_in_table(callback.message.chat.id) is not False:
+            data_from_database = await Database().search_in_table(callback.message.chat.id)
             if data_from_database[0][4] >= 4:
                 await bot.edit_message_text(f'Превышен дневной лимит обращений.', callback.message.chat.id,
                                             mes.message_id)
                 pass
             else:
-                await database().update_table(telegram_id=callback.message.chat.id, update_tovar='Сухой корм Premeato')
+                await Database().update_table(telegram_id=callback.message.chat.id, update_tovar='Сухой корм Premeato')
         else:
-            await database().add_user(update_telegram_id=callback.message.chat.id, update_tovar='Сухой корм Premeato')
+            await Database().add_user(update_telegram_id=callback.message.chat.id, update_tovar='Сухой корм Premeato')
 
     elif callback.data == 'choice_good':
         await bot.edit_message_text(f'Пожалуйста выберите интересующий товар:', callback.message.chat.id,
@@ -115,10 +115,10 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                     f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
                                     f'телеграм, чтобы с Вами мог связался специалист.', callback.message.chat.id,
                                     callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
-        if await database().search_in_table(callback.message.chat.id) is not False:
-            await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Проблемы с упаковкой')
+        if await Database().search_in_table(callback.message.chat.id) is not False:
+            await Database().update_table(telegram_id=callback.message.chat.id, update_reasons='Проблемы с упаковкой')
         else:
-            await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Проблемы с упаковкой')
+            await Database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Проблемы с упаковкой')
 
     elif callback.data == 'wrong_taste':
         await bot.edit_message_text(f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
@@ -128,10 +128,10 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                     f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
                                     f'телеграм, чтобы с Вами мог связался специалист.', callback.message.chat.id,
                                     callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
-        if await database().search_in_table(callback.message.chat.id) is not False:
-            await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Пришел не тот вкус')
+        if await Database().search_in_table(callback.message.chat.id) is not False:
+            await Database().update_table(telegram_id=callback.message.chat.id, update_reasons='Пришел не тот вкус')
         else:
-            await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Пришел не тот вкус')
+            await Database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Пришел не тот вкус')
 
     elif callback.data == 'transfer':
         await bot.edit_message_text(f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
@@ -141,11 +141,11 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                     f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
                                     f'телеграм, чтобы с Вами мог связался специалист.', callback.message.chat.id,
                                     callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
-        if await database().search_in_table(callback.message.chat.id) is not False:
-            await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Перевод собаки на корм '
+        if await Database().search_in_table(callback.message.chat.id) is not False:
+            await Database().update_table(telegram_id=callback.message.chat.id, update_reasons='Перевод собаки на корм '
                                                                                                'PREMIATO')
         else:
-            await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Перевод собаки на '
+            await Database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Перевод собаки на '
                                                                                                   'корм PREMIATO')
 
     elif callback.data == 'structure':
@@ -156,10 +156,10 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                     f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
                                     f'телеграм, чтобы с Вами мог связался специалист.', callback.message.chat.id,
                                     callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
-        if await database().search_in_table(callback.message.chat.id) is not False:
-            await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Состав корма')
+        if await Database().search_in_table(callback.message.chat.id) is not False:
+            await Database().update_table(telegram_id=callback.message.chat.id, update_reasons='Состав корма')
         else:
-            await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Состав корма')
+            await Database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Состав корма')
 
     elif callback.data == 'health':
         await bot.edit_message_text(f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
@@ -169,11 +169,11 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                     f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
                                     f'телеграм, чтобы с Вами мог связался специалист.', callback.message.chat.id,
                                     callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
-        if await database().search_in_table(callback.message.chat.id) is not False:
-            await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Употребление при '
+        if await Database().search_in_table(callback.message.chat.id) is not False:
+            await Database().update_table(telegram_id=callback.message.chat.id, update_reasons='Употребление при '
                                                                                                'проблемах со здоровьем')
         else:
-            await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Употребление при '
+            await Database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Употребление при '
                                                                                                   'проблемах со '
                                                                                                   'здоровьем')
 
@@ -185,20 +185,20 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                     f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
                                     f'телеграм, чтобы с Вами мог связался специалист.', callback.message.chat.id,
                                     callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
-        if await database().search_in_table(callback.message.chat.id) is not False:
-            await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Другое')
+        if await Database().search_in_table(callback.message.chat.id) is not False:
+            await Database().update_table(telegram_id=callback.message.chat.id, update_reasons='Другое')
         else:
-            await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Другое')
+            await Database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Другое')
 
     elif callback.data == 'opt':
         await bot.edit_message_text(f'Пожалуйста <b>напишите в сообщении свой номер телефона или ссылку</b> на '
                                     f'аккаунт в телеграм, чтобы с Вами мог связался специалист.',
                                     callback.message.chat.id, callback.message.message_id, parse_mode='html',
                                     reply_markup=kb_back_to_reasons)
-        if await database().search_in_table(callback.message.chat.id) is not False:
-            await database().update_table(telegram_id=callback.message.chat.id, update_reasons='Закупка оптом')
+        if await Database().search_in_table(callback.message.chat.id) is not False:
+            await Database().update_table(telegram_id=callback.message.chat.id, update_reasons='Закупка оптом')
         else:
-            await database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Закупка оптом')
+            await Database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Закупка оптом')
 
     elif callback.data == 'slots':
         await bot.edit_message_text(f'Меню настройки уведомлений о слотах на приемку товаров.',
@@ -213,9 +213,9 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
     elif callback.data.startswith('warehouse_'):
         max_row = False
         keys_list = []
-        user_data = await database().search_in_table(callback.message.chat.id, 'users_for_notification')
+        user_data = await Database().search_in_table(callback.message.chat.id, 'users_for_notification')
         if user_data is False:
-            await database().add_user_in_users_for_notification(callback.message.chat.id,
+            await Database().add_user_in_users_for_notification(callback.message.chat.id,
                                                                 callback.message.chat.first_name, dates=datetime.now())
             subscritions_list = []
         elif user_data[1][0][2]:
@@ -321,7 +321,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 back_button = None
             else:
                 back_button = f'bb{int(keys_list[0][2])-1}'
-            await database().update_users_with_multiple_entries(callback.message.chat.id, 'warehouses',
+            await Database().update_users_with_multiple_entries(callback.message.chat.id, 'warehouses',
                                                                 subscritions_list)
         await buttons(bot, callback.message, keyboard_dict=keys_list, back_value='slots',
                       subscritions_list=subscritions_list, back_button=back_button, next_button=next_button).warehouses_buttons()
@@ -335,9 +335,9 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             pass
         else:
             keys_list = []
-            user_data = await database().search_in_table(callback.message.chat.id, 'users_for_notification')
+            user_data = await Database().search_in_table(callback.message.chat.id, 'users_for_notification')
             if user_data is False:
-                await database().add_user_in_users_for_notification(callback.message.chat.id,
+                await Database().add_user_in_users_for_notification(callback.message.chat.id,
                                                                     callback.message.chat.first_name, dates=datetime.now())
                 subscritions_list = []
             elif user_data[1][0][2]:
@@ -387,7 +387,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                     else:
                         box_type_list.append('Короба')
                     subscritions_list = [user_data[1][0][3], box_type_list]
-                    await database().update_users_with_multiple_entries(callback.message.chat.id,
+                    await Database().update_users_with_multiple_entries(callback.message.chat.id,
                                                                         'type_of_delivery', box_type_list)
                 elif call_data == '5':
                     box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
@@ -398,7 +398,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                     else:
                         box_type_list.append("Монопаллеты")
                     subscritions_list = [user_data[1][0][3], box_type_list]
-                    await database().update_users_with_multiple_entries(callback.message.chat.id,
+                    await Database().update_users_with_multiple_entries(callback.message.chat.id,
                                                                         'type_of_delivery', box_type_list)
                 elif call_data == '6':
                     box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
@@ -409,7 +409,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                     else:
                         box_type_list.append("Суперсейф")
                     subscritions_list = [user_data[1][0][3], box_type_list]
-                    await database().update_users_with_multiple_entries(callback.message.chat.id,
+                    await Database().update_users_with_multiple_entries(callback.message.chat.id,
                                                                         'type_of_delivery', box_type_list)
                 elif call_data == "отсутствует":
                     box_type_list = [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')
@@ -420,17 +420,17 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                     else:
                         box_type_list.append("QR-поставка с коробами")
                     subscritions_list = [user_data[1][0][3], box_type_list]
-                    await database().update_users_with_multiple_entries(callback.message.chat.id,
+                    await Database().update_users_with_multiple_entries(callback.message.chat.id,
                                                                         'type_of_delivery', box_type_list)
                 elif call_data == "minus":
                     koef = 1 if user_data[1][0][3] is None else int(user_data[1][0][3]) - 1
                     subscritions_list = [str(koef), [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')]
-                    await database().update_table_in_users_for_notification(callback.message.chat.id,
+                    await Database().update_table_in_users_for_notification(callback.message.chat.id,
                                                                             {'max_koeff': str(koef)})
                 elif call_data == "plus":
                     koef = 3 if user_data[1][0][3] is None else int(user_data[1][0][3]) + 1
                     subscritions_list = [str(koef), [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')]
-                    await database().update_table_in_users_for_notification(callback.message.chat.id,
+                    await Database().update_table_in_users_for_notification(callback.message.chat.id,
                                                                             {'max_koeff': str(koef)})
             await buttons(bot, callback.message, keyboard_dict=keys_list, back_value='slots',
                           subscritions_list=subscritions_list).setings_buttons()
