@@ -110,20 +110,20 @@ class Database:
         self.db_path = "users.db"
         self.scheduler = AsyncIOScheduler()
         self.scheduler.start()
-        with self.connect() as conn:
-            conn.execute(create_users_table_users)
-            conn.execute(create_users_table_users_for_notification)
-            conn.commit()
 
     async def connect(self):
         try:
+            # with await aiosqlite.connect(self.db_path) as conn:
+            #     await conn.execute(create_users_table_users)
+            #     await conn.execute(create_users_table_users_for_notification)
+            #     await conn.commit()
             """Подключение к базе данных."""
             return await aiosqlite.connect(self.db_path)
         except Exception as e:
             logger.exception('Ошибка в database/Database().connect', e)
 
     async def search_in_table(self, search_telegram_id, table="users"):
-        async with self.connect() as conn:
+        async with await self.connect() as conn:
             try:
                 async with conn.execute(f"SELECT * FROM {table} WHERE telegram_id = ?", (search_telegram_id,)) as cursor:
                     result = await cursor.fetchall()
@@ -132,7 +132,7 @@ class Database:
                 logger.exception('Ошибка в database/Database().search_in_table', e)
 
     async def add_user(self, update_telegram_id, update_tovar=None, update_reasons=None, update_reason_text=None):
-        async with self.connect() as conn:
+        async with await self.connect() as conn:
             try:
                 await conn.execute(
                     f"INSERT INTO users (telegram_id, tovar, reasons, reason_text, number_of_requests) "
@@ -145,7 +145,7 @@ class Database:
 
     async def add_user_in_users_for_notification(self, telegram_id, name=None, warehouses=None, max_koeff=None,
                                                  type_of_delivery=None, dates=None):
-        async with self.connect() as conn:
+        async with await self.connect() as conn:
             try:
                 await conn.execute(f"INSERT INTO users_for_notification (telegram_id, name, warehouses, max_koeff, "
                                    f"type_of_delivery, dates) VALUES (?, ?, ?, ?, ?, ?);", (telegram_id, name, warehouses,
@@ -157,7 +157,7 @@ class Database:
 
     async def update_table_in_users_for_notification(self, telegram_id, update_data):
         set_clause = ", ".join([f"{key}=?" for key in update_data.keys()])
-        async with self.connect() as conn:
+        async with await self.connect() as conn:
             try:
                 await conn.execute(f"UPDATE users_for_notification SET {set_clause} WHERE telegram_id=?",
                                    (*update_data.values(), telegram_id))
@@ -169,14 +169,14 @@ class Database:
                            update_number_of_requests=None):
         try:
             if update_tovar is not None:
-                async with self.connect() as conn:
+                async with await self.connect() as conn:
                     await conn.execute("UPDATE users SET tovar=? WHERE telegram_id=?",
                                        (update_tovar, telegram_id))
             if update_reasons is not None:
-                async with self.connect() as conn:
+                async with await self.connect() as conn:
                     await conn.execute("UPDATE users SET reasons=? WHERE telegram_id=?", (update_reasons, telegram_id))
             if update_number_of_requests is not None:
-                async with self.connect() as conn:
+                async with await self.connect() as conn:
                     await conn.execute("UPDATE users SET number_of_requests=? WHERE telegram_id=?",
                                        (update_number_of_requests, telegram_id))
             await conn.commit()
@@ -184,7 +184,7 @@ class Database:
             logger.exception('Ошибка в database/Database().update_table', e)
 
     async def delete_user(self, telegram_id, table):
-        async with self.connect() as conn:
+        async with await self.connect() as conn:
             try:
                 await conn.execute(f"DELETE FROM {table} WHERE telegram_id = ?;", (telegram_id,))
                 await conn.commit()
@@ -192,7 +192,7 @@ class Database:
                 logger.exception('Ошибка в database/Database().delete_user', e)
 
     async def delete_users_for_notification(self, telegram_id, warehouses):
-        async with self.connect() as conn:
+        async with await self.connect() as conn:
             try:
                 await conn.execute(f"DELETE FROM users_for_notification WHERE telegram_id = ? AND warehouses=?;",
                                    (telegram_id, warehouses))
@@ -201,7 +201,7 @@ class Database:
                 logger.exception('Ошибка в database/Database().delete_users_for_notification', e)
 
     async def delete_all_users(self, table='users'):
-        async with self.connect() as conn:
+        async with await self.connect() as conn:
             try:
                 await conn.execute(f'DELETE FROM {table}')
                 await conn.commit()
@@ -216,7 +216,7 @@ class Database:
         SET {column_name} = ?
         WHERE telegram_id = ?;
         """
-        async with self.connect() as conn:
+        async with await self.connect() as conn:
             try:
                 await conn.execute(update_query, (values_str, telegram_id))
                 await conn.commit()
@@ -225,7 +225,7 @@ class Database:
                 logger.exception('Ошибка в database/Database().update_users_with_multiple_entries', e)
 
     async def return_base_data(self):
-        async with self.connect() as conn:
+        async with await self.connect() as conn:
             try:
                 async with conn.execute("SELECT telegram_id, warehouses, max_koeff, type_of_delivery "
                                         "FROM users_for_notification") as cursor:

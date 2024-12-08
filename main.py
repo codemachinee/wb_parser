@@ -268,19 +268,15 @@ async def search_warehouses():
 
 async def main():
     scheduler = AsyncIOScheduler()
+    # scheduler.add_job(Database.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
     # scheduler.add_job(send_news, trigger="interval", minutes=10)
-    scheduler.add_job(search_warehouses, trigger="interval", seconds=15)
+    # scheduler.add_job(search_warehouses, trigger="interval", seconds=15)
     Database().schedule_task()
     scheduler.start()
     await dp.start_polling(bot)
 
 
 if __name__ == '__main__':
-    try:
-        asyncio.run(Database().delete_all_users())
-    except Exception as e:
-        logger.exception('Ошибка в main/asyncio.run(Database().delete_all_users())', e)
-        asyncio.run(bot.send_message(loggs_acc, f'Ошибка в main/search_warehouses: {e}'))
     try:
         logger.info('включение бота')
         asyncio.run(main())
