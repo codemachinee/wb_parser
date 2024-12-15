@@ -39,6 +39,8 @@ token = codemashine_test
 bot = Bot(token=token)
 dp = Dispatcher()
 
+db = Database()
+
 
 @dp.message(Command(commands='start'))
 async def start(message):
@@ -267,11 +269,12 @@ async def search_warehouses():
 
 
 async def main():
+    await db.connect()
     scheduler = AsyncIOScheduler()
-    # scheduler.add_job(Database.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
+    # scheduler.add_job(db.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
     # scheduler.add_job(send_news, trigger="interval", minutes=10)
     # scheduler.add_job(search_warehouses, trigger="interval", seconds=15)
-    Database().schedule_task()
+    await db.schedule_task()
     scheduler.start()
     await dp.start_polling(bot)
 
@@ -281,4 +284,5 @@ if __name__ == '__main__':
         logger.info('включение бота')
         asyncio.run(main())
     except KeyboardInterrupt:
+        asyncio.run(db.close())
         logger.exception('выключение бота')
