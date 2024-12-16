@@ -109,8 +109,8 @@ class Database:
     def __init__(self):
         self.db_path = "users.db"
         self.connection = None
-        self.scheduler = AsyncIOScheduler()
-        self.scheduler.start()
+        # self.scheduler = AsyncIOScheduler()
+        # self.scheduler.start()
 
     async def connect(self):
         try:
@@ -132,6 +132,15 @@ class Database:
         if self.connection:
             await self.connection.close()
             self.connection = None
+
+    async def chek_tables(self):
+        conn = await self.connect()
+        try:
+            await conn.execute(create_users_table_users)
+            await conn.execute(create_users_table_users_for_notification)
+            await conn.commit()
+        except Exception as e:
+            logger.exception('Ошибка в database/Database().chek_tables', e)
 
     async def search_in_table(self, search_telegram_id, table="users"):
         conn = await self.connect()
@@ -245,10 +254,5 @@ class Database:
         except Exception as e:
             logger.exception('Ошибка в database/Database().return_base_data', e)
 
-    async def schedule_task(self):
-        try:
-            self.scheduler.add_job(self.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
-        except Exception as e:
-            logger.exception('Ошибка в database/Database().schedule_task', e)
 
 # print(asyncio.run(database().search_in_table('11111', 'users_for_notification')))

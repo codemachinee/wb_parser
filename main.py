@@ -269,12 +269,12 @@ async def search_warehouses():
 
 
 async def main():
-    await db.connect()
+    await db.chek_tables()
     scheduler = AsyncIOScheduler()
-    # scheduler.add_job(db.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
+    scheduler.add_job(db.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
+    # scheduler.add_job(db.delete_all_users, trigger="interval", seconds=15)
     # scheduler.add_job(send_news, trigger="interval", minutes=10)
     # scheduler.add_job(search_warehouses, trigger="interval", seconds=15)
-    await db.schedule_task()
     scheduler.start()
     await dp.start_polling(bot)
 
