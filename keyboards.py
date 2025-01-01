@@ -67,11 +67,11 @@ class buttons:  # класс для создания клавиатур разл
             index = keys_list.index(i)
             if self.subscritions_list is not None and f'{i[0]}' in self.subscritions_list:
                 button = types.InlineKeyboardButton(text=f"🔘{i[1]}",
-                                                    callback_data=f"warehouse_{i[2]}_{2 if self.back_button is None else int(self.back_button[2:])+1}")
+                                                    callback_data=f"warehouse_{i[2]}_{0 if self.back_button is None else int(self.back_button[2:])+1}")
                 keys[f'but{index}'] = button
             else:
                 button = types.InlineKeyboardButton(text=i[1],
-                                                    callback_data=f"warehouse_{i[2]}_{2 if self.back_button is None else int(self.back_button[2:])+1}")
+                                                    callback_data=f"warehouse_{i[2]}_{0 if self.back_button is None else int(self.back_button[2:])+1}")
                 keys[f'but{index}'] = button
 
             # Группируем кнопки попарно
@@ -96,7 +96,7 @@ class buttons:  # класс для создания клавиатур разл
             keyboard_list.append([back_button])
         if len(self.subscritions_list) > 1:
             dell_all_button = types.InlineKeyboardButton(text="❌ Удалить выбранные склады",
-                                                         callback_data=f"warehouse_del_{2 if self.back_button is None else int(self.back_button[2:])+1}")
+                                                         callback_data=f"warehouse_del_{0 if self.back_button is None else int(self.back_button[2:])+1}")
             keyboard_list.append([dell_all_button])
         if self.back_value is not None:
             back_value_button = types.InlineKeyboardButton(text="↩️ Вернуться в меню", callback_data=self.back_value)
@@ -175,64 +175,3 @@ class buttons:  # класс для создания клавиатур разл
                                              message_id=self.message.message_id)
             await self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
                                                      reply_markup=kb2)
-
-    # async def zayavki_buttons(self):
-    #     keys = {}
-    #     keyboard_list = []
-    #     keys_list = list(self.keyboard_dict[0].keys())
-    #     if self.back_value != 'razdely_buttons':
-    #         if self.all_button is not None:
-    #             add_list = []
-    #             del_list = []
-    #             for i in keys_list:
-    #                 if f'{self.keyboard_dict[1]}_{i}' in self.subscritions_list:
-    #                     del_list.append(i)
-    #                 else:
-    #                     add_list.append(i)
-    #             if len(del_list) == 0:
-    #                 add_button = types.InlineKeyboardButton(text="📁 Выбрать все", callback_data=f'{self.keyboard_dict[1]}_add_{self.all_button}')
-    #                 keyboard_list.append([add_button])
-    #             elif len(add_list) == 0:
-    #                 del_button = types.InlineKeyboardButton(text="🗑 Удалить все", callback_data=f'{self.keyboard_dict[1]}_del_{self.all_button}')
-    #                 keyboard_list.append([del_button])
-    #             else:
-    #                 add_button = types.InlineKeyboardButton(text="📁 Выбрать все", callback_data=f'{self.keyboard_dict[1]}_add_{self.all_button}')
-    #                 del_button = types.InlineKeyboardButton(text="🗑 Удалить все", callback_data=f'{self.keyboard_dict[1]}_del_{self.all_button}')
-    #                 keyboard_list.append([add_button, del_button])
-    #         else:
-    #             pass
-    #
-    #     if keys_list[0] == 'date':
-    #         keys_list = keys_list[1:]
-    #
-    #     for i in keys_list:
-    #         index = keys_list.index(i)
-    #         if self.subscritions_list is not None and f'{self.keyboard_dict[1]}_{i}' in self.subscritions_list:
-    #             button = types.InlineKeyboardButton(text=f"🔘{self.keyboard_dict[0][i]['name']}",
-    #                                                 callback_data=f"{self.keyboard_dict[1]}_{self.keyboard_dict[0][i]['id']}")
-    #             keys[f'but{index}'] = button
-    #         else:
-    #             button = types.InlineKeyboardButton(text=self.keyboard_dict[0][i]['name'],
-    #                                                 callback_data=f"{self.keyboard_dict[1]}_{self.keyboard_dict[0][i]['id']}")
-    #             keys[f'but{index}'] = button
-    #
-    #         # Группируем кнопки попарно
-    #         if index > 0 and index % 2 != 0:
-    #             previous_button = keys[f'but{index - 1}']
-    #             if len(self.keyboard_dict[0][i]['name']) <= 16 and len(
-    #                     self.keyboard_dict[0][keys_list[index - 1]]['name']) <= 16:
-    #                 keyboard_list.append([previous_button, button])
-    #             else:
-    #                 keyboard_list.append([previous_button])
-    #                 keyboard_list.append([button])
-    #         elif index == (len(keys_list) - 1):
-    #             keyboard_list.append([button])
-    #     if self.back_value is not None:
-    #         back_button = types.InlineKeyboardButton(text="↩️ Вернуться назад", callback_data=self.back_value)
-    #         keyboard_list.append([back_button])
-    #     kb2 = types.InlineKeyboardMarkup(inline_keyboard=keyboard_list, resize_keyboard=True)
-    #
-    #     await self.bot.edit_message_text(text=f'Выберите категории рассылки которых хотите получать (выбранные категории '
-    #                                      'отмечены: 🔘)', chat_id=self.message.chat.id, message_id=self.message.message_id)
-    #     await self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
-    #                                              reply_markup=kb2)

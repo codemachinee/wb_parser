@@ -1,5 +1,7 @@
 import base64
 import asyncio
+import json
+
 import requests
 from bs4 import BeautifulSoup
 from datetime import date, timedelta
@@ -305,22 +307,15 @@ class parse_date:
 
     async def get_coeffs_warehouses(self):
         try:
-            data = []
             BASE_URL = 'https://supplies-api.wildberries.ru/api/v1/acceptance/coefficients'
             params = {
                 "warehouseIDs": None
             }
             response = requests.get(BASE_URL, headers=headers, params=params)
             print(response.status_code)
-            print(response.json())
-            exel_headers_rus = ["дата", "коэффициент", "ID склада",
-                                "имя склада", "тип поставки", "ID типа поставки"]
-            for i in response.json():
-                data.append({'дата': f'{i["date"]}', 'коэффициент': f'{i["coefficient"]}', 'ID склада': f'{i["warehouseID"]}',
-                             'имя склада': f'{i["warehouseName"]}', 'тип поставки': f'{i["boxTypeName"]}',
-                             'ID типа поставки': f'{i.get("boxTypeID", "отсутствует")}'})
-            await data_to_exel("tables/Коэффициенты складов.xlsx", exel_headers_rus,
-                               data)
+            with open('coeffs_from_api.json', 'w', encoding='utf-8') as file:
+                json.dump(response.json(), file, indent=4, ensure_ascii=False)  # Сохранение в JSON файл
+            print(f"Данные сохранены в файл {'coeffs_from_api.json'}")
             return True
         except Exception as e:
             logger.exception(f'Ошибка wb_api/get_coeffs_warehouses', e)

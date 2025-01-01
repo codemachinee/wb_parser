@@ -225,18 +225,17 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
         call_data = callback.data[10:]
         if call_data == 'choice':
             await parse_date().get_coeffs_warehouses()
-            wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
-            sheet = wb.active
-            box_id = str(sheet.cell(2, 6).value)
-            for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=1, max_col=6):
+            with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                data = json.load(file)
+            box_id = data[0]["boxTypeID"]
+            for index_row, row in enumerate(data):
                 if len(keys_list) == 16:
                     break
-                # Проверяем значение в 3-м столбце
-                elif row[5].value == box_id:
-                    keys_list.append([row[2].value, row[3].value, row[0].row])
-                    if row[3].row == sheet.max_row:
-                        max_row = True
-                        break
+                elif str(row["date"])[0:10] == (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"):
+                    max_row = True
+                    break
+                elif row["boxTypeID"] == box_id:
+                    keys_list.append([row["warehouseID"], row["warehouseName"], index_row])
                 else:
                     pass
             if max_row is True:
@@ -246,20 +245,19 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             back_button = None
 
         elif call_data[0:2] == 'nb':
-            wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
-            sheet = wb.active
-            box_id = str(sheet.cell(2, 6).value)
+            with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                data = json.load(file)
+            box_id = data[0]["boxTypeID"]
             call_data = call_data[2:]
-            for row in sheet.iter_rows(min_row=int(call_data), max_row=sheet.max_row, min_col=1, max_col=6):
+            for index_row, row in enumerate(data[int(call_data):], start=int(call_data)):
                 if len(keys_list) == 16:
-                    if str(row[0].value)[0:10] == (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"):
+                    if str(row["date"])[0:10] == (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"):
                         max_row = True
                         break
                     break
-                # Проверяем значение в 3-м столбце
-                elif row[5].value == box_id and str(row[0].value)[0:10] == datetime.now().strftime("%Y-%m-%d"):
-                    keys_list.append([row[2].value, row[3].value, row[0].row])
-                elif str(row[0].value)[0:10] == (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"):
+                elif row["boxTypeID"] == box_id and str(row["date"])[0:10] == datetime.now().strftime("%Y-%m-%d"):
+                    keys_list.append([row["warehouseID"], row["warehouseName"], index_row])
+                elif str(row["date"])[0:10] == (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"):
                     max_row = True
                     break
                 else:
@@ -271,44 +269,42 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             back_button = f'bb{int(keys_list[0][2])-1}'
         elif call_data[0:2] == 'bb':
             call_data = call_data[2:]
-            wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
-            sheet = wb.active
-            box_id = str(sheet.cell(2, 6).value)
-            for row in reversed(list(sheet.iter_rows(min_row=2, max_row=int(call_data), min_col=1, max_col=6))):
+            with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                data = json.load(file)
+            box_id = data[0]["boxTypeID"]
+            for index_row, row in enumerate(data[int(call_data)::-1], start=-int(call_data)):
                 if len(keys_list) == 16:
                     break
-                # Проверяем значение в 3-м столбце
-                elif row[5].value == box_id and str(row[0].value)[0:10] == datetime.now().strftime("%Y-%m-%d"):
-                    keys_list.append([row[2].value, row[3].value, row[0].row])
-                    if row[0].row == 2:
+                elif row["boxTypeID"] == box_id and str(row["date"])[0:10] == datetime.now().strftime("%Y-%m-%d"):
+                    keys_list.append([row["warehouseID"], row["warehouseName"], abs(index_row)])
+                    if index_row == 0:
                         break
                 else:
                     pass
             keys_list = keys_list[::-1]
             next_button = f'nb{int(keys_list[-1][2])+1}'
-            if int(keys_list[0][2]) == 2:
+            if int(keys_list[0][2]) == 0:
                 back_button = None
             else:
                 back_button = f'bb{int(keys_list[0][2])-1}'
         else:
             call_data = call_data.split('_')
-            wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
-            sheet = wb.active
-            box_id = str(sheet.cell(2, 6).value)
+            with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                data = json.load(file)
+            box_id = data[0]["boxTypeID"]
             if call_data[0] == 'del':
                 subscritions_list = []
-            elif str(sheet.cell(int(call_data[0]), 3).value) in subscritions_list:
-                subscritions_list.remove(str(sheet.cell(int(call_data[0]), 3).value))
+            elif str(data[int(call_data[0])]["warehouseID"]) in subscritions_list:
+                subscritions_list.remove(str(data[int(call_data[0])]["warehouseID"]))
             else:
-                subscritions_list.append(str(sheet.cell(int(call_data[0]), 3).value))
+                subscritions_list.append(str(data[int(call_data[0])]["warehouseID"]))
 
-            for row in sheet.iter_rows(min_row=int(call_data[1]), max_row=sheet.max_row, min_col=1, max_col=6):
+            for index_row, row in enumerate(data[int(call_data[1]):], start=int(call_data[1])):
                 if len(keys_list) == 16:
                     break
-                # Проверяем значение в 3-м столбце
-                elif row[5].value == box_id and str(row[0].value)[0:10] == datetime.now().strftime("%Y-%m-%d"):
-                    keys_list.append([row[2].value, row[3].value, row[0].row])
-                elif str(row[0].value)[0:10] == (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"):
+                elif row["boxTypeID"] == box_id and str(row["date"])[0:10] == datetime.now().strftime("%Y-%m-%d"):
+                    keys_list.append([row["warehouseID"], row["warehouseName"], index_row])
+                elif str(row['date'])[0:10] == (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"):
                     max_row = True
                     break
                 else:
@@ -317,7 +313,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 next_button = None
             else:
                 next_button = f'nb{int(keys_list[-1][2])+1}'
-            if int(keys_list[0][2]) == 2:
+            if int(keys_list[0][2]) == 0:
                 back_button = None
             else:
                 back_button = f'bb{int(keys_list[0][2])-1}'
@@ -325,10 +321,6 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                                                 subscritions_list)
         await buttons(bot, callback.message, keyboard_dict=keys_list, back_value='slots',
                       subscritions_list=subscritions_list, back_button=back_button, next_button=next_button).warehouses_buttons()
-        # await bot.edit_message_text(f'Выберите интересующие склады:',  chat_id=callback.message.chat.id,
-        #                             message_id=callback.message.message_id)
-        # await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
-        #                                     reply_markup=kb1)
 
     elif callback.data.startswith('settings_'):
         if callback.data == 'settings_заглушка':
@@ -349,16 +341,15 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 if len(subscritions_list) == 0:
                     pass
                 else:
-                    wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
-                    sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
-                    for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=1, max_col=6):
+                    with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                        data = json.load(file)
+                    for index_row, row in enumerate(data):
                         if len(keys_list) == len(subscritions_list):
                             break
-                        # Проверяем значение в 3-м столбце
-                        elif row[2].value in subscritions_list:
-                            keys_list.append(row[3].value)
-                            if row[3].row == sheet.max_row:
-                                break
+                        elif str(row["date"])[0:10] == (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"):
+                            break
+                        elif str(row["warehouseID"]) in subscritions_list and row["warehouseName"] not in keys_list:
+                            keys_list.append(row["warehouseName"])
                         else:
                             pass
                     subscritions_list = [user_data[1][0][3], [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')]
@@ -366,16 +357,15 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 if len(subscritions_list) == 0:
                     pass
                 else:
-                    wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
-                    sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
-                    for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=1, max_col=6):
+                    with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                        data = json.load(file)
+                    for index_row, row in enumerate(data):
                         if len(keys_list) == len(subscritions_list):
                             break
-                        # Проверяем значение в 3-м столбце
-                        elif row[2].value in subscritions_list:
-                            keys_list.append(row[3].value)
-                            if row[3].row == sheet.max_row:
-                                break
+                        elif str(row["date"])[0:10] == (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"):
+                            break
+                        elif row["warehouseID"] in subscritions_list:
+                            keys_list.append(row["warehouseName"])
                         else:
                             pass
                 if call_data == '2':

@@ -228,38 +228,41 @@ async def search_warehouses():
         if base_data is False:
             pass
         else:
+            await parse_date().get_coeffs_warehouses()
+            with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                data = json.load(file)
             for i in base_data:
                 mess_counter = 0
                 if len(i[1]) is not None and len(i[3]) is not None:
                     warehouses_list = i[1].split(', ')
                     mess_max = len(warehouses_list) * 7 * len(i[3].split(', '))
-                    await parse_date().get_coeffs_warehouses()
-                    wb = openpyxl.load_workbook("tables/Коэффициенты складов.xlsx")
-                    sheet = wb.active  # Берем активный лист (или можно указать по имени, если нужно)
-                    for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=1, max_col=6):
-                        if str(row[2].value) in warehouses_list:
-                            if str(row[4].value) in i[3]:
-                                mess_counter += 1
-                                # if int(row[1].value) <= int(i[2]):
-                                if str(row[1].value) != '-1' and int(row[1].value) <= int(i[2]):
-                                    await bot.send_message(int(i[0]), f'*Появился слот на приемку товара!*\n\n'
-                                                                      f'*склад:* {row[3].value}\n'
-                                                                      f'*тип поставки:* {row[4].value}\n'
-                                                                      f'*коэффициент приемки:* {row[1].value}\n'
-                                                                      f'*дата:* {row[0].value}\n\n'
-                                                                      f'[создать поставку](https://seller.wildberries.ru'
-                                                                      f'/supplies-management/new-supply/goods?draftID='
-                                                                      f'de3416a0-28de-4ae1-9e6e-0e2f18d63ce9)',
-                                                           parse_mode="Markdown")
-                                    if mess_counter >= mess_max:
-                                        break
+                    for row in data:
+                        if datetime.strptime(row['date'], "%Y-%m-%dT%H:%M:%SZ") > datetime.utcnow() + timedelta(days=7):
+                            break
+                        else:
+                            if str(row["warehouseID"]) in warehouses_list:
+                                if row["boxTypeName"] in i[3]:
+                                    mess_counter += 1
+                                    # if int(row[1].value) <= int(i[2]):
+                                    if str(row["coefficient"]) != '-1' and int(row["coefficient"]) <= int(i[2]):
+                                        await bot.send_message(int(i[0]), f'*Появился слот на приемку товара!*\n\n'
+                                                                          f'*склад:* {row["warehouseName"]}\n'
+                                                                          f'*тип поставки:* {row["boxTypeName"]}\n'
+                                                                          f'*коэффициент приемки:* {row["coefficient"]}\n'
+                                                                          f'*дата:* {row["date"]}\n\n'
+                                                                          f'[создать поставку](https://seller.wildberries.ru'
+                                                                          f'/supplies-management/new-supply/goods?draftID='
+                                                                          f'de3416a0-28de-4ae1-9e6e-0e2f18d63ce9)',
+                                                               parse_mode="Markdown")
+                                        if mess_counter >= mess_max:
+                                            break
+                                    else:
+                                        if mess_counter >= mess_max:
+                                            break
                                 else:
-                                    if mess_counter >= mess_max:
-                                        break
+                                    pass
                             else:
                                 pass
-                        else:
-                            pass
 
                 else:
                     pass
