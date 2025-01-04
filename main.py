@@ -224,14 +224,15 @@ async def send_news():
 
 async def search_warehouses():
     try:
-        base_data = await Database().return_base_data()
-        if base_data is False:
+        base_data_users = await Database().return_base_data()
+        await Database().delete_old_messages()
+        if base_data_users is False:
             pass
         else:
             await parse_date().get_coeffs_warehouses()
             with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
                 data = json.load(file)
-            for i in base_data:
+            for i in base_data_users:
                 mess_counter = 0
                 if len(i[1]) is not None and len(i[3]) is not None:
                     warehouses_list = i[1].split(', ')
@@ -245,15 +246,38 @@ async def search_warehouses():
                                     mess_counter += 1
                                     # if int(row[1].value) <= int(i[2]):
                                     if str(row["coefficient"]) != '-1' and int(row["coefficient"]) <= int(i[2]):
-                                        await bot.send_message(int(i[0]), f'*Появился слот на приемку товара!*\n\n'
-                                                                          f'*склад:* {row["warehouseName"]}\n'
-                                                                          f'*тип поставки:* {row["boxTypeName"]}\n'
-                                                                          f'*коэффициент приемки:* {row["coefficient"]}\n'
-                                                                          f'*дата:* {row["date"]}\n\n'
-                                                                          f'[создать поставку](https://seller.wildberries.ru'
-                                                                          f'/supplies-management/new-supply/goods?draftID='
-                                                                          f'de3416a0-28de-4ae1-9e6e-0e2f18d63ce9)',
-                                                               parse_mode="Markdown")
+                                        messages_base = await Database().return_base_messages(str(i[0]), str(row["warehouseID"]),
+                                                                              row["boxTypeName"], row["date"])
+                                        if messages_base is False:
+                                            await Database().add_message(str(i[0]), str(row["warehouseID"]),
+                                                                         row["coefficient"], row["boxTypeName"],
+                                                                         row["date"])
+                                            await asyncio.sleep(0.033)
+                                            await bot.send_message(int(i[0]), f'*Появился слот на приемку товара!*\n\n'
+                                                                              f'*склад:* {row["warehouseName"]}\n'
+                                                                              f'*тип поставки:* {row["boxTypeName"]}\n'
+                                                                              f'*коэффициент приемки:* {row["coefficient"]}\n'
+                                                                              f'*дата:* {row["date"][:10]}\n\n'
+                                                                              f'[создать поставку](https://seller.wildberries.ru'
+                                                                              f'/supplies-management/new-supply/goods?draftID='
+                                                                              f'de3416a0-28de-4ae1-9e6e-0e2f18d63ce9)',
+                                                                   parse_mode="Markdown")
+                                        elif int(messages_base[0][2]) > int(row["coefficient"]):
+                                            await Database().update_messages_koeff(str(i[0]), str(row["warehouseID"]),
+                                                                         row["coefficient"], row["boxTypeName"],
+                                                                         row["date"])
+                                            await asyncio.sleep(0.033)
+                                            await bot.send_message(int(i[0]), f'*СНИЖЕНИЕ коэффициента приемки товара!*\n\n'
+                                                                              f'*склад:* {row["warehouseName"]}\n'
+                                                                              f'*тип поставки:* {row["boxTypeName"]}\n'
+                                                                              f'*коэффициент приемки:* {row["coefficient"]}\n'
+                                                                              f'*дата:* {row["date"][:10]}\n\n'
+                                                                              f'[создать поставку](https://seller.wildberries.ru'
+                                                                              f'/supplies-management/new-supply/goods?draftID='
+                                                                              f'de3416a0-28de-4ae1-9e6e-0e2f18d63ce9)',
+                                                                   parse_mode="Markdown")
+                                        else:
+                                            pass
                                         if mess_counter >= mess_max:
                                             break
                                     else:

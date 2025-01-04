@@ -1,9 +1,9 @@
 import asyncio
+from datetime import datetime, timezone
+
 import aiosqlite
 import time
 from loguru import logger
-
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 create_users_table_users = ("CREATE TABLE IF NOT EXISTS users (telegram_id TEXT, tovar TEXT, reasons TEXT, "
                             "reason_text TEXT, number_of_requests INT);")
@@ -11,6 +11,10 @@ create_users_table_users = ("CREATE TABLE IF NOT EXISTS users (telegram_id TEXT,
 create_users_table_users_for_notification = ("CREATE TABLE IF NOT EXISTS users_for_notification (telegram_id TEXT NOT "
                                              "NULL, name TEXT DEFAULT NULL, warehouses TEXT DEFAULT NULL, max_koeff	"
                                              "INTEGER DEFAULT 2, type_of_delivery TEXT DEFAULT NULL, dates TEXT);")
+
+create_table_messages_for_notification = ("CREATE TABLE IF NOT EXISTS messages_for_notification (telegram_id TEXT NOT "
+                                          "NULL, warehouse TEXT DEFAULT NULL, koeff	INTEGER DEFAULT 2, type_of_delivery"
+                                          " TEXT DEFAULT NULL, dates TEXT);")
 
 
 class Database:
@@ -40,6 +44,7 @@ class Database:
         try:
             await conn.execute(create_users_table_users)
             await conn.execute(create_users_table_users_for_notification)
+            await conn.execute(create_table_messages_for_notification)
             await conn.commit()
         except Exception as e:
             logger.exception('Ошибка в database/Database().chek_tables', e)
@@ -76,6 +81,16 @@ class Database:
             await conn.commit()
         except Exception as e:
             logger.exception('Ошибка в database/Database().add_user_in_users_for_notification', e)
+
+    async def add_message(self, telegram_id, warehouse=None, koeff=2, type_of_delivery=None, dates=None):
+        conn = await self.connect()
+        try:
+            await conn.execute(f"INSERT INTO messages_for_notification (telegram_id, warehouse, koeff, "
+                               f"type_of_delivery, dates) VALUES (?, ?, ?, ?, ?);", (telegram_id, warehouse,
+                                                                                        koeff, type_of_delivery, dates))
+            await conn.commit()
+        except Exception as e:
+            logger.exception('Ошибка в database/Database().add_message', e)
 
     async def update_table_in_users_for_notification(self, telegram_id, update_data):
         set_clause = ", ".join([f"{key}=?" for key in update_data.keys()])
@@ -156,5 +171,40 @@ class Database:
         except Exception as e:
             logger.exception('Ошибка в database/Database().return_base_data', e)
 
+    async def delete_old_messages(self):
+        conn = await self.connect()
+        try:
+            input_date_obj = datetime.now(timezone.utc).replace(hour=12, minute=0, second=0, microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
+            input_date_obj = datetime.strptime(input_date_obj, "%Y-%m-%dT%H:%M:%SZ")
+            await conn.execute("DELETE FROM messages_for_notification WHERE dates < ?", (input_date_obj,))
+            await conn.commit()
+        except Exception as e:
+            logger.exception('Ошибка в database/Database().return_base_messages', e)
+
+    async def update_messages_koeff(self, telegram_id, warehouse, koeff, type_of_delivery, dates):
+        conn = await self.connect()
+        try:
+            await conn.execute("UPDATE messages_for_notification SET koeff=? "
+                               "WHERE telegram_id = ? AND warehouse = ? AND type_of_delivery = ? AND dates = ?",
+                               (koeff, telegram_id, warehouse, type_of_delivery, dates))
+            await conn.commit()
+        except Exception as e:
+            logger.exception('Ошибка в database/Database().return_base_messages', e)
+
+    async def return_base_messages(self, telegram_id, warehouse, type_of_delivery, dates):
+        conn = await self.connect()
+        try:
+            async with conn.execute("SELECT * FROM messages_for_notification "
+                                    "WHERE telegram_id = ? AND warehouse = ? AND type_of_delivery = ? AND dates = ?",
+                                    (telegram_id, warehouse, type_of_delivery, dates)) as cursor:
+                rows = await cursor.fetchall()
+                if len(rows) == 0:
+                    return False
+                return rows
+        except Exception as e:
+            logger.exception('Ошибка в database/Database().return_base_messages', e)
+
 
 # print(asyncio.run(database().search_in_table('11111', 'users_for_notification')))
+# print(asyncio.run(Database().delete_old_messages()))
+# print(asyncio.run(Database().return_base_messages()))
