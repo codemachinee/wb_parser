@@ -33,8 +33,8 @@ logger.add(
     diagnose=True       # Подробный вывод
 )
 
-# token = lemonade
-token = codemashine_test
+token = lemonade
+# token = codemashine_test
 
 bot = Bot(token=token)
 dp = Dispatcher()
@@ -213,8 +213,10 @@ async def send_news():
             for i in message:
                 for n in range(0, math.ceil(len(i) / 1020)):
                     if n == (math.ceil(len(i) / 1020) - 1):
+                        await asyncio.sleep(0.033)
                         await bot.send_message(group_id, f'{i[n*1020:]}', message_thread_id=343, parse_mode='HTML')
                     else:
+                        await asyncio.sleep(0.033)
                         await bot.send_message(group_id, f'{i[n * 1020:(n + 1) * 1020]}', message_thread_id=343,
                                                parse_mode='HTML')
     except Exception as e:
@@ -301,7 +303,7 @@ async def main():
     scheduler.add_job(db.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
     # scheduler.add_job(db.delete_all_users, trigger="interval", seconds=15)
     # scheduler.add_job(send_news, trigger="interval", minutes=10)
-    # scheduler.add_job(search_warehouses, trigger="interval", seconds=15)
+    # scheduler.add_job(search_warehouses, trigger="interval", minutes=4)
     scheduler.start()
     await dp.start_polling(bot)
 

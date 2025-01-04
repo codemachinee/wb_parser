@@ -54,7 +54,7 @@ class Database:
         try:
             async with conn.execute(f"SELECT * FROM {table} WHERE telegram_id = ?", (search_telegram_id,)) as cursor:
                 result = await cursor.fetchall()
-                return [True, result] if result else [False, None]
+                return [True, result] if result else False
         except Exception as e:
             logger.exception('Ошибка в database/Database().search_in_table', e)
 

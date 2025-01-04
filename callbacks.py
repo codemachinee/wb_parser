@@ -90,57 +90,61 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             await bot.send_message(callback.message.chat.id, f'Исключение:{data}',
                                    message_thread_id=callback.message.message_thread_id)
     elif callback.data == 'PREMIATO':
-        mes = await bot.edit_message_text(f'Пожалуйста выберите причину обращения', callback.message.chat.id,
-                                          callback.message.message_id, reply_markup=kb_choice_reasons)
+        mes = await bot.edit_message_text(text=f'Пожалуйста выберите причину обращения', chat_id=callback.message.chat.id,
+                                          message_id=callback.message.message_id, reply_markup=kb_choice_reasons)
         if await Database().search_in_table(callback.message.chat.id) is not False:
             data_from_database = await Database().search_in_table(callback.message.chat.id)
-            if data_from_database[0][4] >= 4:
-                await bot.edit_message_text(f'Превышен дневной лимит обращений.', callback.message.chat.id,
-                                            mes.message_id)
-                pass
+            if data_from_database is not False:
+                if data_from_database[1][0][4] >= 4:
+                    await bot.edit_message_text(text=f'Превышен дневной лимит обращений.', chat_id=callback.message.chat.id,
+                                                message_id=mes.message_id)
+                    pass
             else:
                 await Database().update_table(telegram_id=callback.message.chat.id, update_tovar='Сухой корм Premeato')
         else:
             await Database().add_user(update_telegram_id=callback.message.chat.id, update_tovar='Сухой корм Premeato')
 
     elif callback.data == 'choice_good':
-        await bot.edit_message_text(f'Пожалуйста выберите интересующий товар:', callback.message.chat.id,
-                                    callback.message.message_id, reply_markup=kb_choice_tovar)
+        await bot.edit_message_text(text='Пожалуйста выберите интересующий товар:', chat_id=callback.message.chat.id,
+                                    message_id=callback.message.message_id, reply_markup=kb_choice_tovar)
 
     elif callback.data == 'package':
-        await bot.edit_message_text(f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
+        await bot.edit_message_text(text=f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
                                     f'заказа, прикрепите в '
                                     f'сообщение фото, видео (при их наличии).\n\n'
                                     f'<b>Важно отправить все данные одним сообщением.</b> В конце '
                                     f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
-                                    f'телеграм, чтобы с Вами мог связался специалист.', callback.message.chat.id,
-                                    callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
+                                    f'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
+                                    message_id=callback.message.message_id, parse_mode='html',
+                                    reply_markup=kb_back_to_reasons)
         if await Database().search_in_table(callback.message.chat.id) is not False:
             await Database().update_table(telegram_id=callback.message.chat.id, update_reasons='Проблемы с упаковкой')
         else:
             await Database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Проблемы с упаковкой')
 
     elif callback.data == 'wrong_taste':
-        await bot.edit_message_text(f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
+        await bot.edit_message_text(text=f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
                                     f'заказа, прикрепите в '
                                     f'сообщение фото, видео (при их наличии).\n\n'
                                     f'<b>Важно отправить все данные одним сообщением.</b> В конце '
                                     f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
-                                    f'телеграм, чтобы с Вами мог связался специалист.', callback.message.chat.id,
-                                    callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
+                                    f'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
+                                    message_id=callback.message.message_id, parse_mode='html',
+                                    reply_markup=kb_back_to_reasons)
         if await Database().search_in_table(callback.message.chat.id) is not False:
             await Database().update_table(telegram_id=callback.message.chat.id, update_reasons='Пришел не тот вкус')
         else:
             await Database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Пришел не тот вкус')
 
     elif callback.data == 'transfer':
-        await bot.edit_message_text(f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
+        await bot.edit_message_text(text=f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
                                     f'заказа, прикрепите в '
                                     f'сообщение фото, видео (при их наличии).\n\n'
                                     f'<b>Важно отправить все данные одним сообщением.</b> В конце '
                                     f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
-                                    f'телеграм, чтобы с Вами мог связался специалист.', callback.message.chat.id,
-                                    callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
+                                    f'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
+                                    message_id=callback.message.message_id, parse_mode='html',
+                                    reply_markup=kb_back_to_reasons)
         if await Database().search_in_table(callback.message.chat.id) is not False:
             await Database().update_table(telegram_id=callback.message.chat.id, update_reasons='Перевод собаки на корм '
                                                                                                'PREMIATO')
@@ -149,26 +153,26 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                                                                                   'корм PREMIATO')
 
     elif callback.data == 'structure':
-        await bot.edit_message_text(f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
+        await bot.edit_message_text(text=f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
                                     f'заказа, прикрепите в '
                                     f'сообщение фото, видео (при их наличии).\n\n'
                                     f'<b>Важно отправить все данные одним сообщением.</b> В конце '
                                     f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
-                                    f'телеграм, чтобы с Вами мог связался специалист.', callback.message.chat.id,
-                                    callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
+                                    f'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
+                                    message_id=callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
         if await Database().search_in_table(callback.message.chat.id) is not False:
             await Database().update_table(telegram_id=callback.message.chat.id, update_reasons='Состав корма')
         else:
             await Database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Состав корма')
 
     elif callback.data == 'health':
-        await bot.edit_message_text(f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
+        await bot.edit_message_text(text=f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
                                     f'заказа, прикрепите в '
                                     f'сообщение фото, видео (при их наличии).\n\n'
                                     f'<b>Важно отправить все данные одним сообщением.</b> В конце '
                                     f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
-                                    f'телеграм, чтобы с Вами мог связался специалист.', callback.message.chat.id,
-                                    callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
+                                    f'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
+                                    message_id=callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
         if await Database().search_in_table(callback.message.chat.id) is not False:
             await Database().update_table(telegram_id=callback.message.chat.id, update_reasons='Употребление при '
                                                                                                'проблемах со здоровьем')
@@ -178,22 +182,22 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                                                                                   'здоровьем')
 
     elif callback.data == 'other':
-        await bot.edit_message_text(f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
+        await bot.edit_message_text(text=f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
                                     f'заказа, прикрепите в '
                                     f'сообщение фото, видео (при их наличии).\n\n'
                                     f'<b>Важно отправить все данные одним сообщением.</b> В конце '
                                     f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
-                                    f'телеграм, чтобы с Вами мог связался специалист.', callback.message.chat.id,
-                                    callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
+                                    f'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
+                                    message_id=callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
         if await Database().search_in_table(callback.message.chat.id) is not False:
             await Database().update_table(telegram_id=callback.message.chat.id, update_reasons='Другое')
         else:
             await Database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Другое')
 
     elif callback.data == 'opt':
-        await bot.edit_message_text(f'Пожалуйста <b>напишите в сообщении свой номер телефона или ссылку</b> на '
+        await bot.edit_message_text(text=f'Пожалуйста <b>напишите в сообщении свой номер телефона или ссылку</b> на '
                                     f'аккаунт в телеграм, чтобы с Вами мог связался специалист.',
-                                    callback.message.chat.id, callback.message.message_id, parse_mode='html',
+                                    chat_id=callback.message.chat.id, message_id=callback.message.message_id, parse_mode='html',
                                     reply_markup=kb_back_to_reasons)
         if await Database().search_in_table(callback.message.chat.id) is not False:
             await Database().update_table(telegram_id=callback.message.chat.id, update_reasons='Закупка оптом')
@@ -201,12 +205,13 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             await Database().add_user(update_telegram_id=callback.message.chat.id, update_reasons='Закупка оптом')
 
     elif callback.data == 'slots':
-        await bot.edit_message_text(f'Меню настройки уведомлений о слотах на приемку товаров.',
+        await bot.edit_message_text(text=f'Меню настройки уведомлений о слотах на приемку товаров.',
                                     chat_id=callback.message.chat.id, message_id=callback.message.message_id)
         await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
                                             reply_markup=kb_slots_menu)
     elif callback.data == 'func_menu':
-        await bot.edit_message_text(f'Выберите функцию:',  chat_id=callback.message.chat.id, message_id=callback.message.message_id)
+        await bot.edit_message_text(text=f'Выберите функцию:',  chat_id=callback.message.chat.id,
+                                    message_id=callback.message.message_id)
         await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
                                             reply_markup=kb1)
 

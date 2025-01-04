@@ -23,7 +23,7 @@ class parse_date:
     async def get_price(self):
         BASE_URL = 'https://suppliers-api.wildberries.ru/public/api/v1/info'
         response = requests.get(BASE_URL, headers=headers)
-        print(response.status_code)
+        # print(response.status_code)
         for i in response.json():
             print(f'id товара: {i["nmId"]} , цена товара: {i["price"]}, скидка: {i["discount"]}, '
                   f'промокод: {i["promoCode"]}, цена с учетом скидки: {int(i["price"] * (1 - int(i["discount"]) / 100))}')
@@ -44,7 +44,7 @@ class parse_date:
         }
         BASE_URL = 'https://suppliers-api.wildberries.ru/content/v1/cards/cursor/list'
         response = requests.post(BASE_URL, headers=headers, json=parametrs)
-        print(response.status_code)
+        # print(response.status_code)
         for i in response.json()['data']['cards']:
             print(f"фото: {i['mediaFiles']}")
 
@@ -91,7 +91,7 @@ class parse_date:
             data = []
             exel_headers = ["id", "название", "адрес", "принимаемый тип товара",
                             "тип доставки, который принимает склад", "является Вашим складом"]
-            print(response.status_code)
+            # print(response.status_code)
             for i in response.json():
                 data.append({'id': f'{i["id"]}', 'название': f'{i["name"]}', 'адрес': f'{i["address"]}',
                              'принимаемый тип товара': f'{"обычный" if i["cargoType"] == 1 else "сверхгабаритный товар"}',
@@ -111,7 +111,7 @@ class parse_date:
             data = []
             exel_headers = ["id", "название", "ID склада WB", "принимаемый тип товара",
                             "тип доставки, который принимает склад"]
-            print(response.status_code)
+            # print(response.status_code)
             for i in response.json():
                 data.append({'id': f'{i["id"]}', 'название': f'{i["name"]}', 'ID склада WB': f'{i["officeId"]}',
                              'принимаемый тип товара': f'{"обычный" if i["cargoType"] == 1 else "сверхгабаритный товар"}',
@@ -131,7 +131,7 @@ class parse_date:
                 "offset": "0",
             }
             response = requests.get(BASE_URL, headers=headers, params=params)
-            print(response.status_code)
+            # print(response.status_code)
             data = []
             exel_headers = [f"id номенклатуры", "код производителя", "id размера", "цена без скидки", "цена со скидкой",
                             "размер", "валюта", "скидка %", "своя цена для размеров"]
@@ -155,7 +155,7 @@ class parse_date:
                 "next": "0",
             }
             response = requests.get(BASE_URL, headers=headers, params=params)
-            print(response.status_code)
+            # print(response.status_code)
             for i in response.json()['supplies']:
                 print(i)
         except Exception as e:
@@ -170,7 +170,7 @@ class parse_date:
                 "dateFrom": f"{date.today()}",
             }
             response = requests.get(BASE_URL, headers=headers, params=params)
-            print(response.status_code)
+            # print(response.status_code)
             exel_headers_rus = ["Номер поставки", "Номер УПД", "Дата поступления", "Время обновления информации в сервисе",
                                 "Артикул продавца", "Размер товара", "Бар-код", "Количество", "Цена из УПД",
                                 "Дата принятия (закрытия) в WB", "Склад", "Артикул WB", "Статус поставки"]
@@ -189,7 +189,7 @@ class parse_date:
                 "dateFrom": f"{date.today()}",
             }
             response = requests.get(BASE_URL, headers=headers, params=params)
-            print(response.status_code)
+            # print(response.status_code)
             for i in response.json():
                 print(i)
         except Exception as e:
@@ -220,7 +220,7 @@ class parse_date:
                 "isAnswered": "false"
             }
             response = requests.get(BASE_URL, headers=headers, params=params)
-            print(response.status_code)
+            # print(response.status_code)
             file_content = base64.b64decode(response.json()["data"]["file"])
             with open("tables/report_questions.xlsx", "wb") as f:
                 f.write(file_content)
@@ -236,7 +236,7 @@ class parse_date:
                 "isAnswered": "false"
             }
             response = requests.get(BASE_URL, headers=headers, params=params)
-            print(response.status_code)
+            # print(response.status_code)
             file_content = base64.b64decode(response.json()["data"]["file"])
             with open('tables/report_feedbacks.xlsx', "wb") as f:
                 f.write(file_content)
@@ -252,7 +252,7 @@ class parse_date:
                 "date": f"{date.today()}",
             }
             response = requests.get(BASE_URL, headers=headers, params=params)
-            print(response.status_code)
+            # print(response.status_code)
             exel_headers = ['boxDeliveryAndStorageExpr', 'boxDeliveryBase', 'boxDeliveryLiter',	'boxStorageBase',
                             'boxStorageLiter',	'warehouseName']
             exel_headers_rus = ['boxDeliveryAndStorageExpr', 'boxDeliveryBase', 'boxDeliveryLiter',	'boxStorageBase',
@@ -271,7 +271,7 @@ class parse_date:
                 "date": f"{date.today()}",
             }
             response = requests.get(BASE_URL, headers=headers, params=params)
-            print(response.status_code)
+            # print(response.status_code)
             exel_headers = ['palletDeliveryExpr', 'palletDeliveryValueBase', 'palletDeliveryValueLiter', 'palletStorageExpr',
                             'palletStorageValueExpr',	'warehouseName']
             exel_headers_rus = ['palletDeliveryExpr', 'palletDeliveryValueBase', 'palletDeliveryValueLiter',
@@ -290,7 +290,7 @@ class parse_date:
                 "date": f"{date.today()}",
             }
             response = requests.get(BASE_URL, headers=headers, params=params)
-            print(response.status_code)
+            # print(response.status_code)
             exel_headers = ["deliveryDumpKgtOfficeBase", "deliveryDumpKgtOfficeLiter", "deliveryDumpKgtReturnExpr",
                             "deliveryDumpSrgOfficeExpr", "deliveryDumpSrgReturnExpr", "deliveryDumpSupCourierBase",
                             "deliveryDumpSupCourierLiter", "deliveryDumpSupOfficeBase", "deliveryDumpSupOfficeLiter",
@@ -312,10 +312,10 @@ class parse_date:
                 "warehouseIDs": None
             }
             response = requests.get(BASE_URL, headers=headers, params=params)
-            print(response.status_code)
+            # print(response.status_code)
             with open('coeffs_from_api.json', 'w', encoding='utf-8') as file:
                 json.dump(response.json(), file, indent=4, ensure_ascii=False)  # Сохранение в JSON файл
-            print(f"Данные сохранены в файл {'coeffs_from_api.json'}")
+            # print(f"Данные сохранены в файл {'coeffs_from_api.json'}")
             return True
         except Exception as e:
             logger.exception(f'Ошибка wb_api/get_coeffs_warehouses', e)
