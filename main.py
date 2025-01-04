@@ -52,7 +52,7 @@ async def start(message):
                                parse_mode='html')
     else:
         data_from_database = await Database().search_in_table(message.chat.id)
-        if data_from_database is not False and data_from_database[0][4] >= 6:
+        if data_from_database is not False and data_from_database[1][0][4] >= 6:
             pass
         else:
             await bot.send_message(message.chat.id, f'<b>Здравствуйте {message.from_user.first_name}!</b>\n\n'
@@ -80,7 +80,7 @@ async def help(message):
                                parse_mode='html')
     else:
         data_from_database = await Database().search_in_table(message.chat.id)
-        if data_from_database is not False and data_from_database[0][4] >= 6:
+        if data_from_database is not False and data_from_database[1][0][4] >= 6:
             pass
         else:
             await bot.send_message(message.chat.id, f'<b>Бот</b> служит для автоматизации процессса обработки клиентских '
@@ -157,39 +157,39 @@ async def chek_message(message):
     elif message.chat.id not in admins_list:
         data_from_database = await Database().search_in_table(message.chat.id)
         if data_from_database is not False:
-            if data_from_database[0][4] >= 6:
+            if data_from_database[1][0][4] >= 6:
                 pass
-            elif data_from_database[0][4] >= 4:
+            elif data_from_database[1][0][4] >= 4:
                 await bot.send_message(message.chat.id, f'Превышен дневной лимит обращений.')
                 await Database().update_table(telegram_id=message.chat.id,
-                                              update_number_of_requests=data_from_database[0][4] + 1)
+                                              update_number_of_requests=data_from_database[1][0][4] + 1)
             else:
                 mes = await bot.send_message(message.chat.id, 'Загрузка..⏳')
                 await Database().update_table(telegram_id=message.chat.id,
-                                              update_number_of_requests=data_from_database[0][4] + 1)
-                if data_from_database[0][2]:
+                                              update_number_of_requests=data_from_database[1][0][4] + 1)
+                if data_from_database[1][0][2]:
                     try:
-                        await clients_base(bot, message, data_from_database[0][1]).record_in_base(data_from_database[0][2],
+                        await clients_base(bot, message, data_from_database[1][0][1]).record_in_base(data_from_database[1][0][2],
                                                                                                   message.md_text)             # применяем message.md_text, потоому что при отправке текста с картинкой message.text = None
                         await bot.send_message(group_id, f'🚨!!!СРОЧНО!!!🚨\n'
                                                          f'Поступило  ОБРАЩЕНИЕ от:\n'
                                                          f'Ссылка: @{message.from_user.username}\n'
                                                          f'id чата: {message.chat.id}\n'
-                                                         f'Товар: {data_from_database[0][1]}\n'
-                                                         f'Причина: {data_from_database[0][2]}\n'
+                                                         f'Товар: {data_from_database[1][0][1]}\n'
+                                                         f'Причина: {data_from_database[1][0][2]}\n'
                                                          f'Ссылка на базу: https://docs.google.com/spreadsheets/d/1gPsql3jmemm'
                                                          f'NbUbN0SQ16NTlYF8omWO4dsbRllJBElw/edit#gid=0\n', message_thread_id=343)
 
                         await bot.copy_message(group_id, message.chat.id, message.message_id, message_thread_id=343)
-                        await bot.edit_message_text(f'Спасибо за обращение, с Вами скоро свяжутся.', message.chat.id,
-                                                    mes.message_id)
+                        await bot.edit_message_text(text=f'Спасибо за обращение, с Вами скоро свяжутся.', chat_id=message.chat.id,
+                                                    message_id=mes.message_id)
                     except Exception as e:
                         logger.exception('Исключение вызванное проблемами подключения к гугл-таблице', e)
                         await bot.send_message(loggs_acc, f'Исключение вызванное проблемами подключения к '
                                                                f'гугл-таблице: {e}')
                 else:
-                    await bot.edit_message_text(f'Пожалуйста выберите причину обращения:', message.chat.id,
-                                                mes.message_id, reply_markup=kb_choice_reasons)
+                    await bot.edit_message_text(text=f'Пожалуйста выберите причину обращения:', chat_id=message.chat.id,
+                                                message_id=mes.message_id, reply_markup=kb_choice_reasons)
         else:
             await bot.send_message(message.chat.id, f'Пожалуйста выберите интересующий товар:',
                                    message_thread_id=message.message_thread_id, reply_markup=kb_choice_tovar)
@@ -302,8 +302,8 @@ async def main():
     scheduler = AsyncIOScheduler()
     scheduler.add_job(db.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
     # scheduler.add_job(db.delete_all_users, trigger="interval", seconds=15)
-    # scheduler.add_job(send_news, trigger="interval", minutes=10)
-    # scheduler.add_job(search_warehouses, trigger="interval", minutes=4)
+    scheduler.add_job(send_news, trigger="interval", minutes=10)
+    scheduler.add_job(search_warehouses, trigger="interval", minutes=4)
     scheduler.start()
     await dp.start_polling(bot)
 
