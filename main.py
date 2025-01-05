@@ -302,8 +302,8 @@ async def main():
     scheduler = AsyncIOScheduler()
     scheduler.add_job(db.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
     # scheduler.add_job(db.delete_all_users, trigger="interval", seconds=15)
-    scheduler.add_job(send_news, trigger="interval", minutes=10)
-    scheduler.add_job(search_warehouses, trigger="interval", minutes=4)
+    scheduler.add_job(send_news, trigger="interval", minutes=10, misfire_grace_time=60, coalesce=True)
+    scheduler.add_job(search_warehouses, trigger="interval", minutes=4, misfire_grace_time=60, coalesce=True)
     scheduler.start()
     await dp.start_polling(bot)
 
