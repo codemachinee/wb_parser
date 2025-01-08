@@ -1,3 +1,4 @@
+import aiofiles
 from aiogram.fsm.context import FSMContext
 from datetime import datetime
 from wb_api import *
@@ -229,9 +230,15 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             subscritions_list = []
         call_data = callback.data[10:]
         if call_data == 'choice':
-            await parse_date().get_coeffs_warehouses()
-            with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
-                data = json.load(file)
+            try:
+                await parse_date().get_coeffs_warehouses()
+            except Exception as e:
+                logger.exception('Ошибка в подключения к api(parse_date().get_coeffs_warehouses())', e)
+                await bot.send_message(loggs_acc,
+                                       f'Ошибка в подключения к api(parse_date().get_coeffs_warehouses()) {e}')
+            async with aiofiles.open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                content = await file.read()
+                data = json.loads(content)
             box_id = data[0]["boxTypeID"]
             for index_row, row in enumerate(data):
                 if len(keys_list) == 16:
@@ -250,8 +257,9 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             back_button = None
 
         elif call_data[0:2] == 'nb':
-            with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
-                data = json.load(file)
+            async with aiofiles.open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                content = await file.read()
+                data = json.loads(content)
             box_id = data[0]["boxTypeID"]
             call_data = call_data[2:]
             for index_row, row in enumerate(data[int(call_data):], start=int(call_data)):
@@ -274,8 +282,9 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             back_button = f'bb{int(keys_list[0][2])-1}'
         elif call_data[0:2] == 'bb':
             call_data = call_data[2:]
-            with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
-                data = json.load(file)
+            async with aiofiles.open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                content = await file.read()
+                data = json.loads(content)
             box_id = data[0]["boxTypeID"]
             for index_row, row in enumerate(data[int(call_data)::-1], start=-int(call_data)):
                 if len(keys_list) == 16:
@@ -294,8 +303,9 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 back_button = f'bb{int(keys_list[0][2])-1}'
         else:
             call_data = call_data.split('_')
-            with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
-                data = json.load(file)
+            async with aiofiles.open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                content = await file.read()
+                data = json.loads(content)
             box_id = data[0]["boxTypeID"]
             if call_data[0] == 'del':
                 subscritions_list = []
@@ -346,8 +356,9 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 if len(subscritions_list) == 0:
                     pass
                 else:
-                    with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
-                        data = json.load(file)
+                    async with aiofiles.open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                        content = await file.read()
+                        data = json.loads(content)
                     for index_row, row in enumerate(data):
                         if len(keys_list) == len(subscritions_list):
                             break
@@ -362,8 +373,9 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 if len(subscritions_list) == 0:
                     pass
                 else:
-                    with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
-                        data = json.load(file)
+                    async with aiofiles.open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                        content = await file.read()
+                        data = json.loads(content)
                     for index_row, row in enumerate(data):
                         if len(keys_list) == len(subscritions_list):
                             break

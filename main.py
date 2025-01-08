@@ -227,13 +227,21 @@ async def send_news():
 async def search_warehouses():
     try:
         base_data_users = await Database().return_base_data()
+        input_date_obj = datetime.now(timezone.utc).replace(hour=12, minute=0, second=0, microsecond=0).strftime(
+            "%Y-%m-%dT%H:%M:%SZ")
+        input_date_obj = datetime.strptime(input_date_obj, "%Y-%m-%dT%H:%M:%SZ")
         await Database().delete_old_messages()
         if base_data_users is False:
             pass
         else:
-            await parse_date().get_coeffs_warehouses()
-            with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
-                data = json.load(file)
+            try:
+                await parse_date().get_coeffs_warehouses()
+            except Exception as e:
+                logger.exception('Ошибка в подключения к api(parse_date().get_coeffs_warehouses())', e)
+                await bot.send_message(loggs_acc, f'Ошибка в подключения к api(parse_date().get_coeffs_warehouses()) {e}')
+            async with aiofiles.open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                content = await file.read()
+                data = json.loads(content)
             for i in base_data_users:
                 mess_counter = 0
                 if len(i[1]) is not None and len(i[3]) is not None:
@@ -242,6 +250,8 @@ async def search_warehouses():
                     for row in data:
                         if datetime.strptime(row['date'], "%Y-%m-%dT%H:%M:%SZ") > datetime.utcnow() + timedelta(days=7):
                             break
+                        elif datetime.strptime(row['date'], "%Y-%m-%dT%H:%M:%SZ") < input_date_obj:
+                            pass
                         else:
                             if str(row["warehouseID"]) in warehouses_list:
                                 if row["boxTypeName"] in i[3]:
@@ -304,6 +314,7 @@ async def main():
     # scheduler.add_job(db.delete_all_users, trigger="interval", seconds=15)
     scheduler.add_job(send_news, trigger="interval", minutes=10, misfire_grace_time=60, coalesce=True)
     scheduler.add_job(search_warehouses, trigger="interval", minutes=4, misfire_grace_time=60, coalesce=True)
+    # scheduler.add_job(send_news, "cron", day_of_week='mon-sun', hour=14, minute=33, misfire_grace_time=60, coalesce=True)
     scheduler.start()
     await dp.start_polling(bot)
 
