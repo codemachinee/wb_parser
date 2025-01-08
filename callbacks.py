@@ -12,7 +12,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
     if callback.data == 'wb_warehouses':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("tables/список складов wb.xlsx")
+            file_path = FSInputFile("tables/list of warehouses.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:
@@ -21,7 +21,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
     elif callback.data == 'my_warehouses':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("tables/список моих складов.xlsx")
+            file_path = FSInputFile("tables/list of my warehouses.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:
@@ -30,7 +30,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
     elif callback.data == 'goods_list':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("tables/список товаров.xlsx")
+            file_path = FSInputFile("tables/list of products.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:
@@ -39,7 +39,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
     elif callback.data == 'tariffs_returns':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("tables/Тарифы на возвраты.xlsx")
+            file_path = FSInputFile("tables/rates for refunds.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:
@@ -48,7 +48,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
     elif callback.data == 'tariffs_box':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("tables/Тарифы на короб.xlsx")
+            file_path = FSInputFile("tables/box rates.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:
@@ -57,7 +57,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
     elif callback.data == 'tariffs_pallet':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("tables/Тарифы на монопалет.xlsx")
+            file_path = FSInputFile("tables/monopallet rates.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:
@@ -84,7 +84,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
     elif callback.data == 'suplier_list':
         data = await parse_date().get_wb_warehouses()
         if data is None:
-            file_path = FSInputFile("tables/Отчет о поставках.xlsx")
+            file_path = FSInputFile("tables/delivery report.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
                                     message_thread_id=callback.message.message_thread_id)
         else:

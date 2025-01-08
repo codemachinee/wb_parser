@@ -116,7 +116,7 @@ class parse_date:
                                      'тип доставки, который принимает склад':
                                      f'{"доставка на склад Wildberries" if i["deliveryType"] == 1 else ("доставка силами продавца" if i["deliveryType"] == 2 else "доставка курьером WB")}',
                                      'является Вашим складом': f'{"является" if i["selected"] is True else "не является"}'})
-                    await data_to_exel("tables/список складов wb.xlsx", exel_headers, data, headers_rus=None)
+                    await data_to_exel("tables/list of warehouses.xlsx", exel_headers, data, headers_rus=None)
         except Exception as e:
             logger.exception(f'Ошибка wb_api/get_wb_warehouses', e)
             return e
@@ -138,7 +138,7 @@ class parse_date:
                                      'принимаемый тип товара': f'{"обычный" if i["cargoType"] == 1 else "сверхгабариnный товар"}',
                                      'тип доставки, который принимает склад':
                                          f'{"доставка на склад Wildberries" if i["deliveryType"] == 1 else ("доставка силами продавца" if i["deliveryType"] == 2 else "доставка курьером WB")}'})
-                    await data_to_exel("tables/список моих складов.xlsx", exel_headers, data, headers_rus=None)
+                    await data_to_exel("tables/list of my warehouses.xlsx", exel_headers, data, headers_rus=None)
         except Exception as e:
             logger.exception(f'Ошибка wb_api/get_my_warehouses', e)
             return e
@@ -165,7 +165,7 @@ class parse_date:
                                      'цена со скидкой': f'{i["sizes"][0]["discountedPrice"]}',
                                      'размер': f'{i["sizes"][0]["techSizeName"]}', 'валюта': f'{i["currencyIsoCode4217"]}',
                                      'скидка %': f'{i["discount"]}', 'своя цена для размеров': f'{i["editableSizePrice"]}'})
-                    await data_to_exel("tables/список товаров.xlsx", exel_headers, data, headers_rus=None)
+                    await data_to_exel("tables/list of products.xlsx", exel_headers, data, headers_rus=None)
         except Exception as e:
             logger.exception(f'Ошибка wb_api/get_goods_list', e)
             return e
@@ -206,7 +206,7 @@ class parse_date:
                                         "Дата принятия (закрытия) в WB", "Склад", "Артикул WB", "Статус поставки"]
                     exel_headers = ["incomeId", "number", "date", "lastChangeDate", "supplierArticle", "techSize", "barcode",
                                     "quantity", "totalPrice", "dateClose", "warehouseName", "nmId", "status"]
-                    await data_to_exel("tables/Отчет о поставках.xlsx", exel_headers, json_data, exel_headers_rus)
+                    await data_to_exel("tables/delivery report.xlsx", exel_headers, json_data, exel_headers_rus)
         except Exception as e:
             logger.exception(f'Ошибка wb_api/get_supplier_list', e)
             return e
@@ -301,7 +301,7 @@ class parse_date:
                                     'boxStorageLiter',	'warehouseName']
                     exel_headers_rus = ['boxDeliveryAndStorageExpr', 'boxDeliveryBase', 'boxDeliveryLiter',	'boxStorageBase',
                                         'boxStorageLiter',	'склад']
-                    await data_to_exel("tables/Тарифы на короб.xlsx", exel_headers,
+                    await data_to_exel("tables/box rates.xlsx", exel_headers,
                                        json_data['response']['data']['warehouseList'], exel_headers_rus)
         except Exception as e:
             logger.exception(f'Ошибка wb_api/get_tariffs_box', e)
@@ -323,7 +323,7 @@ class parse_date:
                                     'palletStorageValueExpr',	'warehouseName']
                     exel_headers_rus = ['palletDeliveryExpr', 'palletDeliveryValueBase', 'palletDeliveryValueLiter',
                                         'palletStorageExpr', 'palletStorageValueExpr',	'склад']
-                    await data_to_exel("tables/Тарифы на монопалет.xlsx", exel_headers,
+                    await data_to_exel("tables/monopallet rates.xlsx", exel_headers,
                                        json_data['response']['data']['warehouseList'], exel_headers_rus)
         except Exception as e:
             logger.exception(f'Ошибка wb_api/get_tariffs_pallet', e)
@@ -349,7 +349,7 @@ class parse_date:
                                         "deliveryDumpSrgOfficeExpr", "deliveryDumpSrgReturnExpr", "deliveryDumpSupCourierBase",
                                         "deliveryDumpSupCourierLiter", "deliveryDumpSupOfficeBase", "deliveryDumpSupOfficeLiter",
                                         "deliveryDumpSupReturnExpr", "склад"]
-                    await data_to_exel("tables/Тарифы на возвраты.xlsx", exel_headers,
+                    await data_to_exel("tables/rates for refunds.xlsx", exel_headers,
                                        json_data['response']['data']['warehouseList'], exel_headers_rus)
         except Exception as e:
             logger.exception(f'Ошибка wb_api/get_tariffs_returns', e)

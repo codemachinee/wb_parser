@@ -1,4 +1,7 @@
 venv
+env
+loggs*
+errors*
 passwords.py
 pidor-of-the-day-af3dd140b860.json
 pidor-of-the-day-5880592e7067.json
@@ -6,14 +9,14 @@ coeffs_from_api.json
 Рассчет экономики.xlsx
 loggs.log
 errors.log
-tables/Отчет о поставках.xlsx
+tables/delivery report.xlsx
 tables/report_feedbacks.xlsx
-tables/список моих складов.xlsx
-tables/список складов wb.xlsx
-tables/список товаров.xlsx
-tables/Тарифы на возвраты.xlsx
-tables/Тарифы на короб.xlsx
-tables/Тарифы на монопалет.xlsx
+tables/list of my warehouses.xlsx
+tables/list of warehouses.xlsx
+tables/list of products.xlsx
+tables/rates for refunds.xlsx
+tables/box rates.xlsx
+tables/monopallet rates.xlsx
 tables/report_questions.xlsx
 tables/Коэффициенты складов.xlsx
 users.db*
