@@ -9,10 +9,11 @@ coeffs_from_api.json
 Рассчет экономики.xlsx
 loggs.log
 errors.log
+tables/
 tables/delivery report.xlsx
 tables/report_feedbacks.xlsx
-tables/list of my warehouses.xlsx
 tables/list of warehouses.xlsx
+tables/list of my warehouses.xlsx
 tables/list of products.xlsx
 tables/rates for refunds.xlsx
 tables/box rates.xlsx

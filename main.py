@@ -39,8 +39,6 @@ token = lemonade
 bot = Bot(token=token)
 dp = Dispatcher()
 
-db = Database()
-
 
 @dp.message(Command(commands='start'))
 async def start(message):
@@ -51,7 +49,7 @@ async def start(message):
                                f'/help - справка по боту', message_thread_id=message.message_thread_id,
                                parse_mode='html')
     else:
-        data_from_database = await Database().search_in_table(message.chat.id)
+        data_from_database = await db.search_in_table(message.chat.id)
         if data_from_database is not False and data_from_database[1][0][4] >= 6:
             pass
         else:
@@ -79,7 +77,7 @@ async def help(message):
                                message_thread_id=message.message_thread_id,
                                parse_mode='html')
     else:
-        data_from_database = await Database().search_in_table(message.chat.id)
+        data_from_database = await db.search_in_table(message.chat.id)
         if data_from_database is not False and data_from_database[1][0][4] >= 6:
             pass
         else:
@@ -105,7 +103,7 @@ async def functions(message):
 @dp.message(Command(commands='reset_cash'))
 async def functions(message):
     if message.chat.id in admins_list:
-        await Database().delete_all_users()
+        await db.delete_all_users()
         await bot.send_message(message.chat.id, 'Кэш очищен',
                                message_thread_id=message.message_thread_id)
     else:
@@ -155,17 +153,17 @@ async def chek_message(message):
                                                                                 1).replace(' давинчи', '', 1)
             await Artur(bot, message, b)
     elif message.chat.id not in admins_list:
-        data_from_database = await Database().search_in_table(message.chat.id)
+        data_from_database = await db.search_in_table(message.chat.id)
         if data_from_database is not False:
             if data_from_database[1][0][4] >= 6:
                 pass
             elif data_from_database[1][0][4] >= 4:
                 await bot.send_message(message.chat.id, f'Превышен дневной лимит обращений.')
-                await Database().update_table(telegram_id=message.chat.id,
+                await db.update_table(telegram_id=message.chat.id,
                                               update_number_of_requests=data_from_database[1][0][4] + 1)
             else:
                 mes = await bot.send_message(message.chat.id, 'Загрузка..⏳')
-                await Database().update_table(telegram_id=message.chat.id,
+                await db.update_table(telegram_id=message.chat.id,
                                               update_number_of_requests=data_from_database[1][0][4] + 1)
                 if data_from_database[1][0][2]:
                     try:
@@ -225,12 +223,13 @@ async def send_news():
 
 
 async def search_warehouses():
+
     try:
-        base_data_users = await Database().return_base_data()
+        base_data_users = await db.return_base_data()
         input_date_obj = datetime.now(timezone.utc).replace(hour=12, minute=0, second=0, microsecond=0).strftime(
             "%Y-%m-%dT%H:%M:%SZ")
         input_date_obj = datetime.strptime(input_date_obj, "%Y-%m-%dT%H:%M:%SZ")
-        await Database().delete_old_messages()
+        await db.delete_old_messages()
         if base_data_users is False:
             pass
         else:
@@ -258,10 +257,10 @@ async def search_warehouses():
                                     mess_counter += 1
                                     # if int(row[1].value) <= int(i[2]):
                                     if str(row["coefficient"]) != '-1' and int(row["coefficient"]) <= int(i[2]):
-                                        messages_base = await Database().return_base_messages(str(i[0]), str(row["warehouseID"]),
+                                        messages_base = await db.return_base_messages(str(i[0]), str(row["warehouseID"]),
                                                                               row["boxTypeName"], row["date"])
                                         if messages_base is False:
-                                            await Database().add_message(str(i[0]), str(row["warehouseID"]),
+                                            await db.add_message(str(i[0]), str(row["warehouseID"]),
                                                                          row["coefficient"], row["boxTypeName"],
                                                                          row["date"])
                                             await asyncio.sleep(0.033)
@@ -275,7 +274,7 @@ async def search_warehouses():
                                                                               f'de3416a0-28de-4ae1-9e6e-0e2f18d63ce9)',
                                                                    parse_mode="Markdown")
                                         elif int(messages_base[0][2]) > int(row["coefficient"]):
-                                            await Database().update_messages_koeff(str(i[0]), str(row["warehouseID"]),
+                                            await db.update_messages_koeff(str(i[0]), str(row["warehouseID"]),
                                                                          row["coefficient"], row["boxTypeName"],
                                                                          row["date"])
                                             await asyncio.sleep(0.033)
@@ -312,7 +311,7 @@ async def main():
     scheduler = AsyncIOScheduler()
     scheduler.add_job(db.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
     # scheduler.add_job(db.delete_all_users, trigger="interval", seconds=15)
-    # scheduler.add_job(send_news, trigger="interval", minutes=10, misfire_grace_time=60, coalesce=True)
+    scheduler.add_job(send_news, trigger="interval", minutes=10, misfire_grace_time=60, coalesce=True)
     scheduler.add_job(search_warehouses, trigger="interval", minutes=4, misfire_grace_time=60, coalesce=True)
     # scheduler.add_job(send_news, "cron", day_of_week='mon-sun', hour=14, minute=33, misfire_grace_time=60, coalesce=True)
     scheduler.start()

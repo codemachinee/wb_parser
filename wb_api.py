@@ -24,7 +24,7 @@ class parse_date:
         base_url = 'https://suppliers-api.wildberries.ru/public/api/v1/info'
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(base_url, headers=headers) as response:
+                async with session.get(base_url, headers=headers, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
         # print(response.status_code)
@@ -52,7 +52,7 @@ class parse_date:
         base_url = 'https://suppliers-api.wildberries.ru/content/v1/cards/cursor/list'
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.post(base_url, headers=headers, json=parametrs) as response:
+                async with session.post(base_url, headers=headers, json=parametrs, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
                     for i in json_data['data']['cards']:
@@ -73,7 +73,7 @@ class parse_date:
                 "fromID": f"{file_id}"
             }
         async with aiohttp.ClientSession() as session:
-            async with session.get(base_url, headers=headers, params=params) as response:
+            async with session.get(base_url, headers=headers, params=params, ssl=False) as response:
                 response.raise_for_status()
                 json_data = await response.json()
                 async with aiofiles.open('news.txt', 'w') as file:
@@ -103,7 +103,7 @@ class parse_date:
         base_url = 'https://suppliers-api.wildberries.ru/api/v3/offices'
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(base_url, headers=headers) as response:
+                async with session.get(base_url, headers=headers, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
                     data = []
@@ -116,7 +116,7 @@ class parse_date:
                                      'тип доставки, который принимает склад':
                                      f'{"доставка на склад Wildberries" if i["deliveryType"] == 1 else ("доставка силами продавца" if i["deliveryType"] == 2 else "доставка курьером WB")}',
                                      'является Вашим складом': f'{"является" if i["selected"] is True else "не является"}'})
-                    await data_to_exel("tables/list of warehouses.xlsx", exel_headers, data, headers_rus=None)
+                    await data_to_exel("tables/list of my warehouses.xlsx", exel_headers, data, headers_rus=None)
         except Exception as e:
             logger.exception(f'Ошибка wb_api/get_wb_warehouses', e)
             return e
@@ -126,7 +126,7 @@ class parse_date:
         base_url = 'https://suppliers-api.wildberries.ru/api/v3/warehouses'
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(base_url, headers=headers) as response:
+                async with session.get(base_url, headers=headers, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
                     data = []
@@ -152,7 +152,7 @@ class parse_date:
                 "offset": "0",
             }
             async with aiohttp.ClientSession() as session:
-                async with session.get(base_url, headers=headers, params=params) as response:
+                async with session.get(base_url, headers=headers, params=params, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
                     # print(response.status_code)
@@ -179,7 +179,7 @@ class parse_date:
                 "next": "0",
             }
             async with aiohttp.ClientSession() as session:
-                async with session.get(base_url, headers=headers, params=params) as response:
+                async with session.get(base_url, headers=headers, params=params, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
                     # print(response.status_code)
@@ -197,7 +197,7 @@ class parse_date:
                 "dateFrom": f"{date.today()}",
             }
             async with aiohttp.ClientSession() as session:
-                async with session.get(base_url, headers=headers, params=params) as response:
+                async with session.get(base_url, headers=headers, params=params, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
                     # print(response.status_code)
@@ -219,7 +219,7 @@ class parse_date:
                 "dateFrom": f"{date.today()}",
             }
             async with aiohttp.ClientSession() as session:
-                async with session.get(base_url, headers=headers, params=params) as response:
+                async with session.get(base_url, headers=headers, params=params, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
                     # print(response.status_code)
@@ -238,7 +238,7 @@ class parse_date:
                 "rrdid": "0"
             }
             async with aiohttp.ClientSession() as session:
-                async with session.get(base_url, headers=headers, params=params) as response:
+                async with session.get(base_url, headers=headers, params=params, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
                     for i in json_data:
@@ -255,7 +255,7 @@ class parse_date:
                 "isAnswered": "false"
             }
             async with aiohttp.ClientSession() as session:
-                async with session.get(base_url, headers=headers, params=params) as response:
+                async with session.get(base_url, headers=headers, params=params, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
                     # print(response.status_code)
@@ -274,7 +274,7 @@ class parse_date:
                 "isAnswered": "false"
             }
             async with aiohttp.ClientSession() as session:
-                async with session.get(base_url, headers=headers, params=params) as response:
+                async with session.get(base_url, headers=headers, params=params, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
                     # print(response.status_code)
@@ -293,7 +293,7 @@ class parse_date:
                 "date": f"{date.today()}",
             }
             async with aiohttp.ClientSession() as session:
-                async with session.get(base_url, headers=headers, params=params) as response:
+                async with session.get(base_url, headers=headers, params=params, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
                     # print(response.status_code)
@@ -315,7 +315,7 @@ class parse_date:
                 "date": f"{date.today()}",
             }
             async with aiohttp.ClientSession() as session:
-                async with session.get(base_url, headers=headers, params=params) as response:
+                async with session.get(base_url, headers=headers, params=params, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
                     # print(response.status_code)
@@ -337,7 +337,7 @@ class parse_date:
                 "date": f"{date.today()}",
             }
             async with aiohttp.ClientSession() as session:
-                async with session.get(base_url, headers=headers, params=params) as response:
+                async with session.get(base_url, headers=headers, params=params, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
                     # print(response.status_code)
@@ -362,7 +362,7 @@ class parse_date:
                 "warehouseIDs": []
             }
             async with aiohttp.ClientSession() as session:
-                async with session.get(base_url, headers=headers, params=params) as response:
+                async with session.get(base_url, headers=headers, params=params, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
                     # print(response.status_code)
@@ -372,7 +372,6 @@ class parse_date:
                     return True
         except Exception as e:
             logger.exception(f'Ошибка wb_api/get_coeffs_warehouses', e)
-            return e
 
 
 # parse_date().get_tovar_card()

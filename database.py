@@ -205,6 +205,7 @@ class Database:
             logger.exception('Ошибка в database/Database().return_base_messages', e)
 
 
+db = Database()
 # print(asyncio.run(database().search_in_table('11111', 'users_for_notification')))
 # print(asyncio.run(Database().delete_old_messages()))
 # print(asyncio.run(Database().return_base_messages()))
