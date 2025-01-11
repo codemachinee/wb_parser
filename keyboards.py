@@ -1,3 +1,5 @@
+import asyncio
+
 import openpyxl
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -101,9 +103,11 @@ class buttons:  # класс для создания клавиатур разл
             back_value_button = types.InlineKeyboardButton(text="↩️ Вернуться в меню", callback_data=self.back_value)
             keyboard_list.append([back_value_button])
         kb2 = types.InlineKeyboardMarkup(inline_keyboard=keyboard_list, resize_keyboard=True)
+        await asyncio.sleep(0.3)
         await self.bot.edit_message_text(
             text=f'Выберите интересующие склады (выбранные склады '
                  'отмечены: 🔘)', chat_id=self.message.chat.id, message_id=self.message.message_id)
+        await asyncio.sleep(0.1)
         await self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
                                                  reply_markup=kb2)
 
@@ -111,6 +115,7 @@ class buttons:  # класс для создания клавиатур разл
         keys = {}
         keyboard_list = []
         if len(self.subscritions_list) == len(self.keyboard_dict) == 0:
+            await asyncio.sleep(0.3)
             await self.bot.edit_message_text(
                 text=f'Вы не выбрали ни одного склада', chat_id=self.message.chat.id, message_id=self.message.message_id)
             await self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
@@ -169,6 +174,7 @@ class buttons:  # класс для создания клавиатур разл
             back_value_button = types.InlineKeyboardButton(text="↩️ Вернуться в меню", callback_data=self.back_value)
             keyboard_list.append([back_value_button])
             kb2 = types.InlineKeyboardMarkup(inline_keyboard=keyboard_list, resize_keyboard=True)
+            await asyncio.sleep(0.3)
             await self.bot.edit_message_text(text=f'Выбраны следующие склады: {", ".join(self.keyboard_dict)}\n\n'
                                              f'Настройте необходимые параметры:', chat_id=self.message.chat.id,
                                              message_id=self.message.message_id)

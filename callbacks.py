@@ -206,11 +206,13 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             await db.add_user(update_telegram_id=callback.message.chat.id, update_reasons='Закупка оптом')
 
     elif callback.data == 'slots':
+        await asyncio.sleep(0.3)
         await bot.edit_message_text(text=f'Меню настройки уведомлений о слотах на приемку товаров.',
                                     chat_id=callback.message.chat.id, message_id=callback.message.message_id)
         await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
                                             reply_markup=kb_slots_menu)
     elif callback.data == 'func_menu':
+        await asyncio.sleep(0.3)
         await bot.edit_message_text(text=f'Выберите функцию:',  chat_id=callback.message.chat.id,
                                     message_id=callback.message.message_id)
         await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
