@@ -19,7 +19,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             await bot.send_message(callback.message.chat.id, f'Исключение:{data}',
                                    message_thread_id=callback.message.message_thread_id)
     elif callback.data == 'my_warehouses':
-        data = await parse_date().get_wb_warehouses()
+        data = await parse_date().get_my_warehouses()
         if data is None:
             file_path = FSInputFile("tables/list of my warehouses.xlsx")
             await bot.send_document(callback.message.chat.id, file_path,
