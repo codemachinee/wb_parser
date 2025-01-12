@@ -116,7 +116,7 @@ class parse_date:
                                      'тип доставки, который принимает склад':
                                      f'{"доставка на склад Wildberries" if i["deliveryType"] == 1 else ("доставка силами продавца" if i["deliveryType"] == 2 else "доставка курьером WB")}',
                                      'является Вашим складом': f'{"является" if i["selected"] is True else "не является"}'})
-                    await data_to_exel("tables/list of my warehouses.xlsx", exel_headers, data, headers_rus=None)
+                    await data_to_exel("tables/list of warehouses.xlsx", exel_headers, data, headers_rus=None)
         except Exception as e:
             logger.exception(f'Ошибка wb_api/get_wb_warehouses', e)
             return e
