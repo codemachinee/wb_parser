@@ -361,7 +361,8 @@ class parse_date:
             params = {
                 "warehouseIDs": []
             }
-            async with aiohttp.ClientSession() as session:
+            timeout = aiohttp.ClientTimeout(total=60)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.get(base_url, headers=headers, params=params, ssl=False) as response:
                     response.raise_for_status()
                     json_data = await response.json()
