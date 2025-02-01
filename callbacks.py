@@ -6,6 +6,7 @@ from aiogram.types import FSInputFile, CallbackQuery
 from keyboards import *
 from google_sheets import *
 from database import *
+from functions import sheduler_block_value
 
 
 async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
@@ -108,6 +109,25 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
     elif callback.data == 'choice_good':
         await bot.edit_message_text(text='Пожалуйста выберите интересующий товар:', chat_id=callback.message.chat.id,
                                     message_id=callback.message.message_id, reply_markup=kb_choice_tovar)
+
+    elif callback.data == 'scheduler_block':
+            await bot.edit_message_text(text='Пожалуйста выберите интересующий планировщик:', chat_id=callback.message.chat.id,
+                                        message_id=callback.message.message_id)
+            await Buttons(bot, callback.message).scheduler_block_menu_buttons()
+
+    elif callback.data == 'scheduler_news_true':
+        await sheduler_block_value.set_news(False)
+        await Buttons(bot, callback.message).scheduler_block_menu_buttons()
+    elif callback.data == 'scheduler_news_false':
+        await sheduler_block_value.set_news(True)
+        await Buttons(bot, callback.message).scheduler_block_menu_buttons()
+    elif callback.data == 'scheduler_warehouses_true':
+        await sheduler_block_value.set_warehouses(False)
+        await Buttons(bot, callback.message).scheduler_block_menu_buttons()
+
+    elif callback.data == 'scheduler_warehouses_false':
+        await sheduler_block_value.set_warehouses(True)
+        await Buttons(bot, callback.message).scheduler_block_menu_buttons()
 
     elif callback.data == 'package':
         await bot.edit_message_text(text=f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
@@ -336,7 +356,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                 back_button = f'bb{int(keys_list[0][2])-1}'
             await db.update_users_with_multiple_entries(callback.message.chat.id, 'warehouses',
                                                                 subscritions_list)
-        await buttons(bot, callback.message, keyboard_dict=keys_list, back_value='slots',
+        await Buttons(bot, callback.message, keyboard_dict=keys_list, back_value='slots',
                       subscritions_list=subscritions_list, back_button=back_button, next_button=next_button).warehouses_buttons()
 
     elif callback.data.startswith('settings_'):
@@ -441,7 +461,7 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                     subscritions_list = [str(koef), [] if user_data[1][0][4] is None else user_data[1][0][4].split(', ')]
                     await db.update_table_in_users_for_notification(callback.message.chat.id,
                                                                             {'max_koeff': str(koef)})
-            await buttons(bot, callback.message, keyboard_dict=keys_list, back_value='slots',
+            await Buttons(bot, callback.message, keyboard_dict=keys_list, back_value='slots',
                           subscritions_list=subscritions_list).setings_buttons()
     else:
         await callback.message.reply(f'Данный раздел в разработке')

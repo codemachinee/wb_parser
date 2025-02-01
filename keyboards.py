@@ -3,11 +3,13 @@ import asyncio
 import openpyxl
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from functions import sheduler_block_value
 
 from wb_api import parse_date
 
 kb1 = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🔔 Уведомление о слотах на складах', callback_data='slots')],
+    [InlineKeyboardButton(text='🤖 Блокировка планировщика', callback_data='scheduler_block')],
     [InlineKeyboardButton(text='🍇 Список складов wb', callback_data='wb_warehouses')],
     [InlineKeyboardButton(text='🏠 Список моих складов', callback_data='my_warehouses')],
     [InlineKeyboardButton(text='📋 Список товаров', callback_data='goods_list')],
@@ -47,7 +49,7 @@ kb_slots_menu = InlineKeyboardMarkup(inline_keyboard=[
 ])
 
 
-class buttons:  # класс для создания клавиатур различных категорий товаров
+class Buttons:  # класс для создания клавиатур различных категорий товаров
 
     def __init__(self, bot, message, kategoriya=None, keyboard_dict=None, back_value=None, subscritions_list=[],
                  back_button=None, next_button=None):
@@ -180,3 +182,19 @@ class buttons:  # класс для создания клавиатур разл
                                              message_id=self.message.message_id)
             await self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
                                                      reply_markup=kb2)
+
+    async def scheduler_block_menu_buttons(self):
+        kb_schedulers_menu = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(
+                text='🔴🗞 Отправка новостей' if sheduler_block_value.news is False else '🟢🗞 Отправка новостей',
+                callback_data='scheduler_news_false' if sheduler_block_value.news is False else
+                'scheduler_news_true')],
+            [InlineKeyboardButton(
+                text='️🔴💰 Отправка кэфов приемки' if sheduler_block_value.warehouses is False else '️🟢💰 Отправка кэфов '
+                                                                                                  'приемки',
+                callback_data='scheduler_warehouses_false' if sheduler_block_value.warehouses is False else
+                'scheduler_warehouses_true')],
+            [InlineKeyboardButton(text='🔙 Вернуться назад', callback_data='func_menu')]
+        ])
+        await self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
+                                                 reply_markup=kb_schedulers_menu)

@@ -6,6 +6,7 @@ import math
 from salute import *
 from FSM import step_message
 from callbacks import *
+from functions import *
 from loguru import logger
 
 # Удаляем стандартный обработчик
@@ -103,9 +104,12 @@ async def functions(message):
 @dp.message(Command(commands='reset_cash'))
 async def functions(message):
     if message.chat.id in admins_list:
-        await db.delete_all_users()
-        await bot.send_message(message.chat.id, 'Кэш очищен',
-                               message_thread_id=message.message_thread_id)
+        if sheduler_block_value.news is True:
+            await db.delete_all_users()
+            await bot.send_message(message.chat.id, 'Кэш очищен',
+                                   message_thread_id=message.message_thread_id)
+        else:
+            print('автоматизация news заблочена')
     else:
         await bot.send_message(message.chat.id, 'Недостаточно прав',
                                message_thread_id=message.message_thread_id)
@@ -203,107 +207,113 @@ async def chek_message(v):
 
 
 async def send_news():
-    try:
-        message = await parse_date().get_news()
-        if message is None:
-            pass
-        else:
-            for i in message:
-                for n in range(0, math.ceil(len(i) / 1020)):
-                    if n == (math.ceil(len(i) / 1020) - 1):
-                        await asyncio.sleep(0.1)
-                        await bot.send_message(group_id, f'{i[n*1020:]}', message_thread_id=343, parse_mode='HTML')
-                    else:
-                        await asyncio.sleep(0.1)
-                        await bot.send_message(group_id, f'{i[n * 1020:(n + 1) * 1020]}', message_thread_id=343,
-                                               parse_mode='HTML')
-    except Exception as e:
-        logger.exception('Ошибка в main/send_news', e)
-        await bot.send_message(loggs_acc, f'Ошибка в фyкции send_news: {e}')
+    if sheduler_block_value.news is True:
+        try:
+            message = await parse_date().get_news()
+            if message is None:
+                pass
+            else:
+                for i in message:
+                    for n in range(0, math.ceil(len(i) / 1020)):
+                        if n == (math.ceil(len(i) / 1020) - 1):
+                            await asyncio.sleep(0.1)
+                            await bot.send_message(group_id, f'{i[n*1020:]}', message_thread_id=343, parse_mode='HTML')
+                        else:
+                            await asyncio.sleep(0.1)
+                            await bot.send_message(group_id, f'{i[n * 1020:(n + 1) * 1020]}', message_thread_id=343,
+                                                   parse_mode='HTML')
+        except Exception as e:
+            logger.exception('Ошибка в main/send_news', e)
+            await bot.send_message(loggs_acc, f'Ошибка в фyкции send_news: {e}')
+
+    else:
+        pass
 
 
 async def search_warehouses():
-
-    try:
-        base_data_users = await db.return_base_data()
-        input_date_obj = datetime.now(timezone.utc).replace(hour=12, minute=0, second=0, microsecond=0).strftime(
-            "%Y-%m-%dT%H:%M:%SZ")
-        input_date_obj = datetime.strptime(input_date_obj, "%Y-%m-%dT%H:%M:%SZ")
-        await db.delete_old_messages()
-        if base_data_users is False:
-            pass
-        else:
-            try:
-                await parse_date().get_coeffs_warehouses()
-            except Exception as e:
-                logger.exception('Ошибка в подключения к api(parse_date().get_coeffs_warehouses())', e)
-                await bot.send_message(loggs_acc, f'Ошибка в подключения к api(parse_date().get_coeffs_warehouses()) {e}')
-            async with aiofiles.open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
-                content = await file.read()
-                data = json.loads(content)
-            for i in base_data_users:
-                mess_counter = 0
-                if i[1] is not None and i[3] is not None:
-                    warehouses_list = i[1].split(', ')
-                    mess_max = len(warehouses_list) * 7 * len(i[3].split(', '))
-                    for row in data:
-                        if datetime.strptime(row['date'], "%Y-%m-%dT%H:%M:%SZ") > datetime.utcnow() + timedelta(days=7):
-                            break
-                        elif datetime.strptime(row['date'], "%Y-%m-%dT%H:%M:%SZ") < input_date_obj:
-                            pass
-                        else:
-                            if str(row["warehouseID"]) in warehouses_list:
-                                if row["boxTypeName"] in i[3]:
-                                    mess_counter += 1
-                                    # if int(row[1].value) <= int(i[2]):
-                                    if str(row["coefficient"]) != '-1' and int(row["coefficient"]) <= int(i[2]):
-                                        messages_base = await db.return_base_messages(str(i[0]), str(row["warehouseID"]),
-                                                                              row["boxTypeName"], row["date"])
-                                        if messages_base is False:
-                                            await db.add_message(str(i[0]), str(row["warehouseID"]),
-                                                                         row["coefficient"], row["boxTypeName"],
-                                                                         row["date"])
-                                            await asyncio.sleep(0.033)
-                                            await bot.send_message(int(i[0]), f'*Появился слот на приемку товара!*\n\n'
-                                                                              f'*склад:* {row["warehouseName"]}\n'
-                                                                              f'*тип поставки:* {row["boxTypeName"]}\n'
-                                                                              f'*коэффициент приемки:* {row["coefficient"]}\n'
-                                                                              f'*дата:* {row["date"][:10]}\n\n'
-                                                                              f'[создать поставку](https://seller.wildberries.ru'
-                                                                              f'/supplies-management/new-supply/goods?draftID='
-                                                                              f'de3416a0-28de-4ae1-9e6e-0e2f18d63ce9)',
-                                                                   parse_mode="Markdown")
-                                        elif int(messages_base[0][2]) > int(row["coefficient"]):
-                                            await db.update_messages_koeff(str(i[0]), str(row["warehouseID"]),
-                                                                         row["coefficient"], row["boxTypeName"],
-                                                                         row["date"])
-                                            await asyncio.sleep(0.033)
-                                            await bot.send_message(int(i[0]), f'*СНИЖЕНИЕ коэффициента приемки товара!*\n\n'
-                                                                              f'*склад:* {row["warehouseName"]}\n'
-                                                                              f'*тип поставки:* {row["boxTypeName"]}\n'
-                                                                              f'*коэффициент приемки:* {row["coefficient"]}\n'
-                                                                              f'*дата:* {row["date"][:10]}\n\n'
-                                                                              f'[создать поставку](https://seller.wildberries.ru'
-                                                                              f'/supplies-management/new-supply/goods?draftID='
-                                                                              f'de3416a0-28de-4ae1-9e6e-0e2f18d63ce9)',
-                                                                   parse_mode="Markdown")
+    if sheduler_block_value.warehouses is True:
+        try:
+            base_data_users = await db.return_base_data()
+            input_date_obj = datetime.now(timezone.utc).replace(hour=12, minute=0, second=0, microsecond=0).strftime(
+                "%Y-%m-%dT%H:%M:%SZ")
+            input_date_obj = datetime.strptime(input_date_obj, "%Y-%m-%dT%H:%M:%SZ")
+            await db.delete_old_messages()
+            if base_data_users is False:
+                pass
+            else:
+                try:
+                    await parse_date().get_coeffs_warehouses()
+                except Exception as e:
+                    logger.exception('Ошибка в подключения к api(parse_date().get_coeffs_warehouses())', e)
+                    await bot.send_message(loggs_acc, f'Ошибка в подключения к api(parse_date().get_coeffs_warehouses()) {e}')
+                async with aiofiles.open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
+                    content = await file.read()
+                    data = json.loads(content)
+                for i in base_data_users:
+                    mess_counter = 0
+                    if i[1] is not None and i[3] is not None:
+                        warehouses_list = i[1].split(', ')
+                        mess_max = len(warehouses_list) * 7 * len(i[3].split(', '))
+                        for row in data:
+                            if datetime.strptime(row['date'], "%Y-%m-%dT%H:%M:%SZ") > datetime.utcnow() + timedelta(days=7):
+                                break
+                            elif datetime.strptime(row['date'], "%Y-%m-%dT%H:%M:%SZ") < input_date_obj:
+                                pass
+                            else:
+                                if str(row["warehouseID"]) in warehouses_list:
+                                    if row["boxTypeName"] in i[3]:
+                                        mess_counter += 1
+                                        # if int(row[1].value) <= int(i[2]):
+                                        if str(row["coefficient"]) != '-1' and int(row["coefficient"]) <= int(i[2]):
+                                            messages_base = await db.return_base_messages(str(i[0]), str(row["warehouseID"]),
+                                                                                  row["boxTypeName"], row["date"])
+                                            if messages_base is False:
+                                                await db.add_message(str(i[0]), str(row["warehouseID"]),
+                                                                             row["coefficient"], row["boxTypeName"],
+                                                                             row["date"])
+                                                await asyncio.sleep(0.033)
+                                                await bot.send_message(int(i[0]), f'*Появился слот на приемку товара!*\n\n'
+                                                                                  f'*склад:* {row["warehouseName"]}\n'
+                                                                                  f'*тип поставки:* {row["boxTypeName"]}\n'
+                                                                                  f'*коэффициент приемки:* {row["coefficient"]}\n'
+                                                                                  f'*дата:* {row["date"][:10]}\n\n'
+                                                                                  f'[создать поставку](https://seller.wildberries.ru'
+                                                                                  f'/supplies-management/new-supply/goods?draftID='
+                                                                                  f'de3416a0-28de-4ae1-9e6e-0e2f18d63ce9)',
+                                                                       parse_mode="Markdown")
+                                            elif int(messages_base[0][2]) > int(row["coefficient"]):
+                                                await db.update_messages_koeff(str(i[0]), str(row["warehouseID"]),
+                                                                             row["coefficient"], row["boxTypeName"],
+                                                                             row["date"])
+                                                await asyncio.sleep(0.033)
+                                                await bot.send_message(int(i[0]), f'*СНИЖЕНИЕ коэффициента приемки товара!*\n\n'
+                                                                                  f'*склад:* {row["warehouseName"]}\n'
+                                                                                  f'*тип поставки:* {row["boxTypeName"]}\n'
+                                                                                  f'*коэффициент приемки:* {row["coefficient"]}\n'
+                                                                                  f'*дата:* {row["date"][:10]}\n\n'
+                                                                                  f'[создать поставку](https://seller.wildberries.ru'
+                                                                                  f'/supplies-management/new-supply/goods?draftID='
+                                                                                  f'de3416a0-28de-4ae1-9e6e-0e2f18d63ce9)',
+                                                                       parse_mode="Markdown")
+                                            else:
+                                                pass
+                                            if mess_counter >= mess_max:
+                                                break
                                         else:
-                                            pass
-                                        if mess_counter >= mess_max:
-                                            break
+                                            if mess_counter >= mess_max:
+                                                break
                                     else:
-                                        if mess_counter >= mess_max:
-                                            break
+                                        pass
                                 else:
                                     pass
-                            else:
-                                pass
 
-                else:
-                    pass
-    except Exception as e:
-        logger.exception('Ошибка в main/search_warehouses', e)
-        await bot.send_message(loggs_acc, f'Ошибка в main/search_warehouses: {e}')
+                    else:
+                        pass
+        except Exception as e:
+            logger.exception('Ошибка в main/search_warehouses', e)
+            await bot.send_message(loggs_acc, f'Ошибка в main/search_warehouses: {e}')
+    else:
+        pass
 
 
 async def main():

@@ -1,13 +1,27 @@
-import json
-from datetime import datetime, timedelta
+import asyncio
 
 
-def check_date():
-    with open('coeffs_from_api.json', 'r', encoding='utf-8') as file:
-        data = json.load(file)
-    for row in data[2:]:
-        print(row)
-        break
+class Sheduler_block:
+    def __init__(self):
+        self.block = True
+
+    async def get_block(self):
+        return self.block
+
+    async def set_block(self, value):
+        self.block = value
 
 
-check_date()
+
+a = Sheduler_block()
+
+
+async def main():
+    print(a.block)
+    print(await a.get_block())
+    await a.set_block(False)
+    print(a.block)
+    print(a)
+
+
+asyncio.run(main())
