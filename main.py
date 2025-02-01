@@ -211,10 +211,10 @@ async def send_news():
             for i in message:
                 for n in range(0, math.ceil(len(i) / 1020)):
                     if n == (math.ceil(len(i) / 1020) - 1):
-                        await asyncio.sleep(0.033)
+                        await asyncio.sleep(0.1)
                         await bot.send_message(group_id, f'{i[n*1020:]}', message_thread_id=343, parse_mode='HTML')
                     else:
-                        await asyncio.sleep(0.033)
+                        await asyncio.sleep(0.1)
                         await bot.send_message(group_id, f'{i[n * 1020:(n + 1) * 1020]}', message_thread_id=343,
                                                parse_mode='HTML')
     except Exception as e:
