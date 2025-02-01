@@ -104,12 +104,9 @@ async def functions(message):
 @dp.message(Command(commands='reset_cash'))
 async def functions(message):
     if message.chat.id in admins_list:
-        if sheduler_block_value.news is True:
-            await db.delete_all_users()
-            await bot.send_message(message.chat.id, 'Кэш очищен',
-                                   message_thread_id=message.message_thread_id)
-        else:
-            print('автоматизация news заблочена')
+        await db.delete_all_users()
+        await bot.send_message(message.chat.id, 'Кэш очищен',
+                               message_thread_id=message.message_thread_id)
     else:
         await bot.send_message(message.chat.id, 'Недостаточно прав',
                                message_thread_id=message.message_thread_id)
