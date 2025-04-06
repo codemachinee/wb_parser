@@ -1,13 +1,24 @@
+import asyncio
+import json
+import math
+from datetime import datetime, timedelta, timezone
+
+import aiofiles
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-import math
-from salute import *
-from FSM import step_message
-from callbacks import *
-from functions import *
 from loguru import logger
+
+from callbacks import callbacks
+from database import db
+from FSM import step_message
+from functions import sheduler_block_value
+from google_sheets import clients_base
+from keyboards import kb1, kb_choice_reasons, kb_choice_tovar
+from passwords import admin_id, admins_list, group_id, lemonade, loggs_acc
+from salute import Artur, save_audio
+from wb_api import parse_date
 
 # Удаляем стандартный обработчик
 logger.remove()
@@ -23,16 +34,6 @@ logger.add(
     diagnose=True       # Подробный вывод
 )
 
-logger.add(
-    "errors.log",
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
-    level="ERROR",
-    rotation="5 MB",
-    retention="10 days",
-    compression="zip",
-    backtrace=True,     # Сохранение трассировки ошибок
-    diagnose=True       # Подробный вывод
-)
 
 token = lemonade
 # token = codemashine_test
@@ -45,9 +46,9 @@ dp = Dispatcher()
 async def start(message):
     if message.chat.id in admins_list:
         # await send_news()
-        await bot.send_message(message.chat.id, f'<b>Бот-поддержки продаж инициализирован.</b>\n'
-                               f'<b>Режим доступа</b>: Администратор\n'
-                               f'/help - справка по боту', message_thread_id=message.message_thread_id,
+        await bot.send_message(message.chat.id, '<b>Бот-поддержки продаж инициализирован.</b>\n'
+                               '<b>Режим доступа</b>: Администратор\n'
+                               '/help - справка по боту', message_thread_id=message.message_thread_id,
                                parse_mode='html')
     else:
         data_from_database = await db.search_in_table(message.chat.id)
@@ -58,23 +59,23 @@ async def start(message):
                                    f'<b>Бот-поддержки клиентов</b> инициализирован.\n'
                                    f'/help - справка по боту', message_thread_id=message.message_thread_id,
                                    parse_mode='html')
-            await bot.send_message(message.chat.id, f'Пожалуйста выберите интересующий товар:',
+            await bot.send_message(message.chat.id, 'Пожалуйста выберите интересующий товар:',
                                    message_thread_id=message.message_thread_id, reply_markup=kb_choice_tovar)
 
 
 @dp.message(Command(commands='help'))
 async def help(message):
     if message.chat.id in admins_list:
-        await bot.send_message(message.chat.id, (f'<b>Основные команды поддерживаемые ботом:</b>\n'
-                                                 f'/start - инициализация бота,\n'
-                                                 f'/help - справка по боту,\n'
-                                                 f'/func - вызов функциональной клавиатуры бота.\n'
-                                                 f'/sent_message - cделать рассылку по клиентской базе.\n'
-                                                 f'/reset_cash - cбросить кэш базы данных.\n\n'
-                                                 f'<b>Для вызова Давинчи</b> необходимо указать имя в сообщении.\n\n'
-                                                 f'<b>Для перевода голосового сообщения</b>(длительность до 1 мин.) '
-                                                 f'в текст ответьте на него словом "давинчи" или перешлите голосовое '
-                                                 f'сообщение в личку боту.\n\n'),
+        await bot.send_message(message.chat.id, ('<b>Основные команды поддерживаемые ботом:</b>\n'
+                                                 '/start - инициализация бота,\n'
+                                                 '/help - справка по боту,\n'
+                                                 '/func - вызов функциональной клавиатуры бота.\n'
+                                                 '/sent_message - cделать рассылку по клиентской базе.\n'
+                                                 '/reset_cash - cбросить кэш базы данных.\n\n'
+                                                 '<b>Для вызова Давинчи</b> необходимо указать имя в сообщении.\n\n'
+                                                 '<b>Для перевода голосового сообщения</b>(длительность до 1 мин.) '
+                                                 'в текст ответьте на него словом "давинчи" или перешлите голосовое '
+                                                 'сообщение в личку боту.\n\n'),
                                message_thread_id=message.message_thread_id,
                                parse_mode='html')
     else:
@@ -82,12 +83,12 @@ async def help(message):
         if data_from_database is not False and data_from_database[1][0][4] >= 6:
             pass
         else:
-            await bot.send_message(message.chat.id, f'<b>Бот</b> служит для автоматизации процессса обработки клиентских '
-                                   f'обращений по проблемным и иным вопросам.\n\n'
-                                   f'<b>Список команд:</b>\n'
-                                   f'/start - инициализация бота,\n'
-                                   f'/help - справка по боту.\n\n'
-                                   f'Разработка ботов любой сложности @hlapps', message_thread_id=message.message_thread_id,
+            await bot.send_message(message.chat.id, '<b>Бот</b> служит для автоматизации процессса обработки клиентских '
+                                   'обращений по проблемным и иным вопросам.\n\n'
+                                   '<b>Список команд:</b>\n'
+                                   '/start - инициализация бота,\n'
+                                   '/help - справка по боту.\n\n'
+                                   'Разработка ботов любой сложности @hlapps', message_thread_id=message.message_thread_id,
                                    parse_mode='html')
 
 
@@ -102,7 +103,7 @@ async def functions(message):
 
 
 @dp.message(Command(commands='reset_cash'))
-async def functions(message):
+async def reset_cash(message):
     if message.chat.id in admins_list:
         await db.delete_all_users()
         await bot.send_message(message.chat.id, 'Кэш очищен',
@@ -132,8 +133,7 @@ async def perehvat(message, state: FSMContext):
 dp.callback_query.register(callbacks, F.data)
 
 
-@dp.message(F.text)
-@dp.message(F.chat.type == 'private')
+@dp.message(F.text, F.chat.type == 'private')
 async def chek_message(message):
     if 'Давинчи' in message.md_text:
         try:
@@ -159,7 +159,7 @@ async def chek_message(message):
             if data_from_database[1][0][4] >= 6:
                 pass
             elif data_from_database[1][0][4] >= 4:
-                await bot.send_message(message.chat.id, f'Превышен дневной лимит обращений.')
+                await bot.send_message(message.chat.id, 'Превышен дневной лимит обращений.')
                 await db.update_table(telegram_id=message.chat.id,
                                               update_number_of_requests=data_from_database[1][0][4] + 1)
             else:
@@ -180,27 +180,27 @@ async def chek_message(message):
                                                          f'NbUbN0SQ16NTlYF8omWO4dsbRllJBElw/edit#gid=0\n', message_thread_id=343)
 
                         await bot.copy_message(group_id, message.chat.id, message.message_id, message_thread_id=343)
-                        await bot.edit_message_text(text=f'Спасибо за обращение, с Вами скоро свяжутся.', chat_id=message.chat.id,
+                        await bot.edit_message_text(text='Спасибо за обращение, с Вами скоро свяжутся.', chat_id=message.chat.id,
                                                     message_id=mes.message_id)
                     except Exception as e:
                         logger.exception('Исключение вызванное проблемами подключения к гугл-таблице', e)
                         await bot.send_message(loggs_acc, f'Исключение вызванное проблемами подключения к '
                                                                f'гугл-таблице: {e}')
                 else:
-                    await bot.edit_message_text(text=f'Пожалуйста выберите причину обращения:', chat_id=message.chat.id,
+                    await bot.edit_message_text(text='Пожалуйста выберите причину обращения:', chat_id=message.chat.id,
                                                 message_id=mes.message_id, reply_markup=kb_choice_reasons)
         else:
-            await bot.send_message(message.chat.id, f'Пожалуйста выберите интересующий товар:',
+            await bot.send_message(message.chat.id, 'Пожалуйста выберите интересующий товар:',
                                    message_thread_id=message.message_thread_id, reply_markup=kb_choice_tovar)
 
 
 @dp.message(F.voice, F.chat.type == 'private')
-async def chek_message(v):
+async def chek_voice_message(v):
     try:
         await save_audio(bot, v)
     except Exception as e:
-        logger.exception('Ошибка в main/save_audio', e)
-        await bot.send_message(loggs_acc, f'Ошибка в main/save_audio: {e}')
+        logger.exception('Ошибка в main/chek_voice_message', e)
+        await bot.send_message(loggs_acc, f'Ошибка в main/chek_voice_message: {e}')
 
 
 async def send_news():
@@ -252,7 +252,7 @@ async def search_warehouses():
                         warehouses_list = i[1].split(', ')
                         mess_max = len(warehouses_list) * 7 * len(i[3].split(', '))
                         for row in data:
-                            if datetime.strptime(row['date'], "%Y-%m-%dT%H:%M:%SZ") > datetime.utcnow() + timedelta(days=7):
+                            if datetime.strptime(row['date'], "%Y-%m-%dT%H:%M:%SZ") > datetime.now() + timedelta(days=7):
                                 break
                             elif datetime.strptime(row['date'], "%Y-%m-%dT%H:%M:%SZ") < input_date_obj:
                                 pass

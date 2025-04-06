@@ -1,12 +1,15 @@
-import requests
-import uuid
 import os
+import uuid
 
+import requests
+import urllib3
 from loguru import logger
 
-from passwords import *
-saved_message_salute = []
+from passwords import autoriz_data_giga, autoriz_data_salute, scope_giga, scope_salute
 
+saved_message_salute = []
+# Отключаем предупреждения
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def key_generate(service_key, scope):
     url = 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth'
@@ -57,7 +60,7 @@ async def Artur(bot, message, text):
     saved_message_salute.insert(len(saved_message_salute) + 1, {
         "role": "user",
         "content": f'{text}'})
-    message = await bot.send_message(message.chat.id, f'секунду..', message_thread_id=message.message_thread_id)
+    message = await bot.send_message(message.chat.id, 'секунду..', message_thread_id=message.message_thread_id)
     url = 'https://gigachat.devices.sberbank.ru/api/v1/chat/completions'
     headers = {
         'Content-Type': 'application/json',
@@ -71,12 +74,12 @@ async def Artur(bot, message, text):
     data['messages'] = [
     {
         "role": "system",
-        "content": f"Ты Давинчи - ты обучающий бот-помощник, который помогает добиться успеха в онлайн продажах "
-                   f"различных товаров на маркетплейсах. Ты гуру маркетинга и e-commerce, знаешь все тонкости этой"
-                   f"сферы и рад поделиться всеми своими знаниями с начинающими ребятами. Ты с радостью помогаешь с"
-                   f"любыми вопросами и даешь развернутый ответ, а также даешь настрой и мотивацию продолжать заниматься."
-                   f"торговлей на маркетплейсах. Твоя цель, помочь новичкам не совершить типичные "
-                   f"ошибки в сфере маркетинга и указать на максимально короткий путь по достижению богатства."
+        "content": "Ты Давинчи - ты обучающий бот-помощник, который помогает добиться успеха в онлайн продажах "
+                   "различных товаров на маркетплейсах. Ты гуру маркетинга и e-commerce, знаешь все тонкости этой"
+                   "сферы и рад поделиться всеми своими знаниями с начинающими ребятами. Ты с радостью помогаешь с"
+                   "любыми вопросами и даешь развернутый ответ, а также даешь настрой и мотивацию продолжать заниматься."
+                   "торговлей на маркетплейсах. Твоя цель, помочь новичкам не совершить типичные "
+                   "ошибки в сфере маркетинга и указать на максимально короткий путь по достижению богатства."
     },
     {
         "role": "user",
@@ -107,7 +110,7 @@ async def Artur(bot, message, text):
     try:
         answer = response.json()['choices'][0]['message']['content']
         # await self.bot.send_message(self.message.chat.id, f'{answer}')
-        await bot.edit_message_text(f'{answer}', message.chat.id, message.message_id)
+        await bot.edit_message_text(f'{answer}', chat_id=message.chat.id, message_id=message.message_id)
         saved_message_salute.insert(len(saved_message_salute) + 1, {
             "role": "assistant",
             "content": f'{str(answer)}'})

@@ -1,11 +1,9 @@
 import asyncio
 
-import openpyxl
 from aiogram import types
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from functions import sheduler_block_value
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from wb_api import parse_date
+from functions import sheduler_block_value
 
 kb1 = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🔔 Уведомление о слотах на складах', callback_data='slots')],
@@ -107,7 +105,7 @@ class Buttons:  # класс для создания клавиатур разл
         kb2 = types.InlineKeyboardMarkup(inline_keyboard=keyboard_list, resize_keyboard=True)
         await asyncio.sleep(0.3)
         await self.bot.edit_message_text(
-            text=f'Выберите интересующие склады (выбранные склады '
+            text='Выберите интересующие склады (выбранные склады '
                  'отмечены: 🔘)', chat_id=self.message.chat.id, message_id=self.message.message_id)
         await asyncio.sleep(0.1)
         await self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
@@ -119,7 +117,7 @@ class Buttons:  # класс для создания клавиатур разл
         if len(self.subscritions_list) == len(self.keyboard_dict) == 0:
             await asyncio.sleep(0.3)
             await self.bot.edit_message_text(
-                text=f'Вы не выбрали ни одного склада', chat_id=self.message.chat.id, message_id=self.message.message_id)
+                text='Вы не выбрали ни одного склада', chat_id=self.message.chat.id, message_id=self.message.message_id)
             await self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
                                                      reply_markup=kb_back_to_menu)
         else:
@@ -127,26 +125,26 @@ class Buttons:  # класс для создания клавиатур разл
                 keys_list = [['📦 Типы приемки:', 'заглушка'],
                              ["Короба", "2"], ["Монопаллеты", "5"],
                              ["Суперсейф", "6"], ["QR-поставка", "отсутствует"],
-                             [f"💸 Коэффициент приемки: до 2", 'заглушка'],
-                             [f"➖", "minus"], [f"➕", "plus"]]
+                             ["💸 Коэффициент приемки: до 2", 'заглушка'],
+                             ["➖", "minus"], ["➕", "plus"]]
             elif int(self.subscritions_list[0]) == 1:
                 keys_list = [['📦 Типы приемки:', 'заглушка'],
                              ["Короба", "2"], ["Монопаллеты", "5"],
                              ["Суперсейф", "6"], ["QR-поставка", "отсутствует"],
                              [f"💸 Коэффициент приемки: до {self.subscritions_list[0]}", 'заглушка'],
-                             [f"➕", "plus"]]
+                             ["➕", "plus"]]
             elif int(self.subscritions_list[0]) == 8:
                 keys_list = [['📦 Типы приемки:', 'заглушка'],
                              ["Короба", "2"], ["Монопаллеты", "5"],
                              ["Суперсейф", "6"], ["QR-поставка", "отсутствует"],
                              [f"💸 Коэффициент приемки: до {self.subscritions_list[0]}", 'заглушка'],
-                             [f"➖", "minus"]]
+                             ["➖", "minus"]]
             else:
                 keys_list = [['📦 Типы приемки:', 'заглушка'],
                              ["Короба", "2"], ["Монопаллеты", "5"],
                              ["Суперсейф", "6"], ["QR-поставка", "отсутствует"],
                              [f"💸 Коэффициент приемки: до {self.subscritions_list[0]}", 'заглушка'],
-                             [f"➖", "minus"], [f"➕", "plus"]]
+                             ["➖", "minus"], ["➕", "plus"]]
             for i in keys_list:
                 index = keys_list.index(i)
                 if len(self.subscritions_list) != 0 and (f'{i[0]}' in self.subscritions_list[1] or f'{i[0]} с коробами'

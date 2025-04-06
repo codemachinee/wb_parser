@@ -1,9 +1,7 @@
-venv
-env
+.venv
 loggs*
 errors*
 passwords.py
-pidor-of-the-day-af3dd140b860.json
 pidor-of-the-day-5880592e7067.json
 coeffs_from_api.json
 Рассчет экономики.xlsx
@@ -22,3 +20,7 @@ tables/report_questions.xlsx
 tables/Коэффициенты складов.xlsx
 users.db*
 __pycache__/
+*.py[cod]
+*$py.class
+.mypy_cache/
+.idea/

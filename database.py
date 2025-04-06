@@ -1,8 +1,6 @@
-import asyncio
 from datetime import datetime, timezone
 
 import aiosqlite
-import time
 from loguru import logger
 
 create_users_table_users = ("CREATE TABLE IF NOT EXISTS users (telegram_id TEXT, tovar TEXT, reasons TEXT, "
@@ -62,8 +60,8 @@ class Database:
         conn = await self.connect()
         try:
             await conn.execute(
-                f"INSERT INTO users (telegram_id, tovar, reasons, reason_text, number_of_requests) "
-                f"VALUES (?, ?, ?, ?, ?);",
+                "INSERT INTO users (telegram_id, tovar, reasons, reason_text, number_of_requests) "
+                "VALUES (?, ?, ?, ?, ?);",
                 (update_telegram_id, update_tovar, update_reasons, update_reason_text, 1),
             )
             await conn.commit()
@@ -74,8 +72,8 @@ class Database:
                                                  type_of_delivery=None, dates=None):
         conn = await self.connect()
         try:
-            await conn.execute(f"INSERT INTO users_for_notification (telegram_id, name, warehouses, max_koeff, "
-                               f"type_of_delivery, dates) VALUES (?, ?, ?, ?, ?, ?);", (telegram_id, name, warehouses,
+            await conn.execute("INSERT INTO users_for_notification (telegram_id, name, warehouses, max_koeff, "
+                               "type_of_delivery, dates) VALUES (?, ?, ?, ?, ?, ?);", (telegram_id, name, warehouses,
                                                                                         max_koeff, type_of_delivery,
                                                                                         dates))
             await conn.commit()
@@ -85,8 +83,8 @@ class Database:
     async def add_message(self, telegram_id, warehouse=None, koeff=2, type_of_delivery=None, dates=None):
         conn = await self.connect()
         try:
-            await conn.execute(f"INSERT INTO messages_for_notification (telegram_id, warehouse, koeff, "
-                               f"type_of_delivery, dates) VALUES (?, ?, ?, ?, ?);", (telegram_id, warehouse,
+            await conn.execute("INSERT INTO messages_for_notification (telegram_id, warehouse, koeff, "
+                               "type_of_delivery, dates) VALUES (?, ?, ?, ?, ?);", (telegram_id, warehouse,
                                                                                         koeff, type_of_delivery, dates))
             await conn.commit()
         except Exception as e:
@@ -129,7 +127,7 @@ class Database:
     async def delete_users_for_notification(self, telegram_id, warehouses):
         conn = await self.connect()
         try:
-            await conn.execute(f"DELETE FROM users_for_notification WHERE telegram_id = ? AND warehouses=?;",
+            await conn.execute("DELETE FROM users_for_notification WHERE telegram_id = ? AND warehouses=?;",
                                (telegram_id, warehouses))
             await conn.commit()
         except Exception as e:

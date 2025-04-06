@@ -1,12 +1,24 @@
+import asyncio
+import json
+from datetime import datetime, timedelta
+
 import aiofiles
 from aiogram.fsm.context import FSMContext
-from datetime import datetime
-from wb_api import *
-from aiogram.types import FSInputFile, CallbackQuery
-from keyboards import *
-from google_sheets import *
-from database import *
+from aiogram.types import CallbackQuery, FSInputFile
+from loguru import logger
+
+from database import db
 from functions import sheduler_block_value
+from keyboards import (
+    Buttons,
+    kb1,
+    kb_back_to_reasons,
+    kb_choice_reasons,
+    kb_choice_tovar,
+    kb_slots_menu,
+)
+from passwords import loggs_acc
+from wb_api import parse_date
 
 
 async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
@@ -92,13 +104,13 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             await bot.send_message(callback.message.chat.id, f'Исключение:{data}',
                                    message_thread_id=callback.message.message_thread_id)
     elif callback.data == 'PREMIATO':
-        mes = await bot.edit_message_text(text=f'Пожалуйста выберите причину обращения', chat_id=callback.message.chat.id,
+        mes = await bot.edit_message_text(text='Пожалуйста выберите причину обращения', chat_id=callback.message.chat.id,
                                           message_id=callback.message.message_id, reply_markup=kb_choice_reasons)
         if await db.search_in_table(callback.message.chat.id) is not False:
             data_from_database = await db.search_in_table(callback.message.chat.id)
             if data_from_database is not False:
                 if data_from_database[1][0][4] >= 4:
-                    await bot.edit_message_text(text=f'Превышен дневной лимит обращений.', chat_id=callback.message.chat.id,
+                    await bot.edit_message_text(text='Превышен дневной лимит обращений.', chat_id=callback.message.chat.id,
                                                 message_id=mes.message_id)
                     pass
             else:
@@ -130,12 +142,12 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
         await Buttons(bot, callback.message).scheduler_block_menu_buttons()
 
     elif callback.data == 'package':
-        await bot.edit_message_text(text=f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
-                                    f'заказа, прикрепите в '
-                                    f'сообщение фото, видео (при их наличии).\n\n'
-                                    f'<b>Важно отправить все данные одним сообщением.</b> В конце '
-                                    f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
-                                    f'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
+        await bot.edit_message_text(text='Пожалуйста опишите подробнее свою ситуацию, укажите номер '
+                                    'заказа, прикрепите в '
+                                    'сообщение фото, видео (при их наличии).\n\n'
+                                    '<b>Важно отправить все данные одним сообщением.</b> В конце '
+                                    '<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
+                                    'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
                                     message_id=callback.message.message_id, parse_mode='html',
                                     reply_markup=kb_back_to_reasons)
         if await db.search_in_table(callback.message.chat.id) is not False:
@@ -144,12 +156,12 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             await db.add_user(update_telegram_id=callback.message.chat.id, update_reasons='Проблемы с упаковкой')
 
     elif callback.data == 'wrong_taste':
-        await bot.edit_message_text(text=f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
-                                    f'заказа, прикрепите в '
-                                    f'сообщение фото, видео (при их наличии).\n\n'
-                                    f'<b>Важно отправить все данные одним сообщением.</b> В конце '
-                                    f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
-                                    f'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
+        await bot.edit_message_text(text='Пожалуйста опишите подробнее свою ситуацию, укажите номер '
+                                    'заказа, прикрепите в '
+                                    'сообщение фото, видео (при их наличии).\n\n'
+                                    '<b>Важно отправить все данные одним сообщением.</b> В конце '
+                                    '<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
+                                    'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
                                     message_id=callback.message.message_id, parse_mode='html',
                                     reply_markup=kb_back_to_reasons)
         if await db.search_in_table(callback.message.chat.id) is not False:
@@ -158,12 +170,12 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             await db.add_user(update_telegram_id=callback.message.chat.id, update_reasons='Пришел не тот вкус')
 
     elif callback.data == 'transfer':
-        await bot.edit_message_text(text=f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
-                                    f'заказа, прикрепите в '
-                                    f'сообщение фото, видео (при их наличии).\n\n'
-                                    f'<b>Важно отправить все данные одним сообщением.</b> В конце '
-                                    f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
-                                    f'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
+        await bot.edit_message_text(text='Пожалуйста опишите подробнее свою ситуацию, укажите номер '
+                                    'заказа, прикрепите в '
+                                    'сообщение фото, видео (при их наличии).\n\n'
+                                    '<b>Важно отправить все данные одним сообщением.</b> В конце '
+                                    '<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
+                                    'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
                                     message_id=callback.message.message_id, parse_mode='html',
                                     reply_markup=kb_back_to_reasons)
         if await db.search_in_table(callback.message.chat.id) is not False:
@@ -174,12 +186,12 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                                                                                   'корм PREMIATO')
 
     elif callback.data == 'structure':
-        await bot.edit_message_text(text=f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
-                                    f'заказа, прикрепите в '
-                                    f'сообщение фото, видео (при их наличии).\n\n'
-                                    f'<b>Важно отправить все данные одним сообщением.</b> В конце '
-                                    f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
-                                    f'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
+        await bot.edit_message_text(text='Пожалуйста опишите подробнее свою ситуацию, укажите номер '
+                                    'заказа, прикрепите в '
+                                    'сообщение фото, видео (при их наличии).\n\n'
+                                    '<b>Важно отправить все данные одним сообщением.</b> В конце '
+                                    '<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
+                                    'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
                                     message_id=callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
         if await db.search_in_table(callback.message.chat.id) is not False:
             await db.update_table(telegram_id=callback.message.chat.id, update_reasons='Состав корма')
@@ -187,12 +199,12 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             await db.add_user(update_telegram_id=callback.message.chat.id, update_reasons='Состав корма')
 
     elif callback.data == 'health':
-        await bot.edit_message_text(text=f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
-                                    f'заказа, прикрепите в '
-                                    f'сообщение фото, видео (при их наличии).\n\n'
-                                    f'<b>Важно отправить все данные одним сообщением.</b> В конце '
-                                    f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
-                                    f'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
+        await bot.edit_message_text(text='Пожалуйста опишите подробнее свою ситуацию, укажите номер '
+                                    'заказа, прикрепите в '
+                                    'сообщение фото, видео (при их наличии).\n\n'
+                                    '<b>Важно отправить все данные одним сообщением.</b> В конце '
+                                    '<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
+                                    'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
                                     message_id=callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
         if await db.search_in_table(callback.message.chat.id) is not False:
             await db.update_table(telegram_id=callback.message.chat.id, update_reasons='Употребление при '
@@ -203,12 +215,12 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
                                                                                                   'здоровьем')
 
     elif callback.data == 'other':
-        await bot.edit_message_text(text=f'Пожалуйста опишите подробнее свою ситуацию, укажите номер '
-                                    f'заказа, прикрепите в '
-                                    f'сообщение фото, видео (при их наличии).\n\n'
-                                    f'<b>Важно отправить все данные одним сообщением.</b> В конце '
-                                    f'<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
-                                    f'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
+        await bot.edit_message_text(text='Пожалуйста опишите подробнее свою ситуацию, укажите номер '
+                                    'заказа, прикрепите в '
+                                    'сообщение фото, видео (при их наличии).\n\n'
+                                    '<b>Важно отправить все данные одним сообщением.</b> В конце '
+                                    '<b>укажите свой номер телефона или ссылку</b> на аккаунт в '
+                                    'телеграм, чтобы с Вами мог связался специалист.', chat_id=callback.message.chat.id,
                                     message_id=callback.message.message_id, parse_mode='html', reply_markup=kb_back_to_reasons)
         if await db.search_in_table(callback.message.chat.id) is not False:
             await db.update_table(telegram_id=callback.message.chat.id, update_reasons='Другое')
@@ -216,8 +228,8 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             await db.add_user(update_telegram_id=callback.message.chat.id, update_reasons='Другое')
 
     elif callback.data == 'opt':
-        await bot.edit_message_text(text=f'Пожалуйста <b>напишите в сообщении свой номер телефона или ссылку</b> на '
-                                    f'аккаунт в телеграм, чтобы с Вами мог связался специалист.',
+        await bot.edit_message_text(text='Пожалуйста <b>напишите в сообщении свой номер телефона или ссылку</b> на '
+                                    'аккаунт в телеграм, чтобы с Вами мог связался специалист.',
                                     chat_id=callback.message.chat.id, message_id=callback.message.message_id, parse_mode='html',
                                     reply_markup=kb_back_to_reasons)
         if await db.search_in_table(callback.message.chat.id) is not False:
@@ -227,13 +239,13 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
 
     elif callback.data == 'slots':
         await asyncio.sleep(0.3)
-        await bot.edit_message_text(text=f'Меню настройки уведомлений о слотах на приемку товаров.',
+        await bot.edit_message_text(text='Меню настройки уведомлений о слотах на приемку товаров.',
                                     chat_id=callback.message.chat.id, message_id=callback.message.message_id)
         await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
                                             reply_markup=kb_slots_menu)
     elif callback.data == 'func_menu':
         await asyncio.sleep(0.3)
-        await bot.edit_message_text(text=f'Выберите функцию:',  chat_id=callback.message.chat.id,
+        await bot.edit_message_text(text='Выберите функцию:',  chat_id=callback.message.chat.id,
                                     message_id=callback.message.message_id)
         await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id,
                                             reply_markup=kb1)
@@ -464,4 +476,4 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
             await Buttons(bot, callback.message, keyboard_dict=keys_list, back_value='slots',
                           subscritions_list=subscritions_list).setings_buttons()
     else:
-        await callback.message.reply(f'Данный раздел в разработке')
+        await callback.message.reply('Данный раздел в разработке')

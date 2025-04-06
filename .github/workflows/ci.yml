@@ -1,0 +1,108 @@
+name: Deploy wb_parser bot
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read         # Разрешения на доступ к коду репозитория
+  packages: write        # Разрешения на загрузку пакетов
+  id-token: write        # Разрешения для работы с токенами
+  actions: read          # Разрешения для работы с действиями
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout репозиторий
+        uses: actions/checkout@v4
+
+      - name: Установка Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: установка uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Установка зависимостей
+        run: uv sync --all-extras --dev
+
+      - name: Create pidor-of-the-day-5880592e7067.json from secrets
+        run: |
+          cat <<'EOF' > pidor-of-the-day-5880592e7067.json
+          ${{ secrets.CONFIG_JSON }}
+          EOF
+
+      - name: Create passwords.py from secrets
+        run: |
+          cat <<'EOF' > passwords.py
+          ${{ secrets.PASWORDS_PY }}
+          EOF
+
+      - name: Запуск тестов
+        run: |
+          uv run pytest -v
+
+  build_and_push_in_GHCR:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout репозиторий
+        uses: actions/checkout@v4
+
+      - name: Вход в GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Сборка Docker образа
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/wb_parser:latest .
+
+      - name: Push Docker образ в GHCR
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/wb_parser:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_push_in_GHCR
+
+    steps:
+      - name: клонирование репозитория в среду выполнения
+        uses: actions/checkout@v4
+
+      - name: Вход на сервер по SSH и деплой
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
+            # Входим в GHCR
+            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+            
+            # Останавливаем и удаляем старый контейнер, если он есть
+            docker rm -f wb_parser || true
+            
+            # Полная очистка кэша, образов и ненужных данных
+            docker system prune -af --volumes
+            
+            # Запускаем контейнер
+            docker run --pull=always -d \
+              --name wb_parser \
+              -v /root/wb_parser/passwords.py:/app/passwords.py \
+              -v /root/wb_parser/pidor-of-the-day-5880592e7067.json:/app/pidor-of-the-day-5880592e7067.json \
+              -v /root/wb_parser/loggs.log:/app/loggs.log \
+              -v /root/wb_parser/users.db:/app/users.db \
+              -v /root/wb_parser/users.db-shm:/app/users.db-shm \
+              -v /root/wb_parser/users.db-wal:/app/users.db-wal \
+              -v /root/wb_parser/tables:/app/tables \
+              -v /root/wb_parser/coeffs_from_api.json:/app/coeffs_from_api.json \
+              -v /root/wb_parser/news.txt:/app/news.txt \
+              ghcr.io/${{ github.repository_owner }}/wb_parser:latest

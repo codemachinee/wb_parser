@@ -1,0 +1,94 @@
+[project]
+name = "wb-parser"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "aiofiles==24.1.0",
+    "aiogram==3.13.1",
+    "aiohappyeyeballs==2.4.2",
+    "aiohttp==3.10.8",
+    "aiosignal==1.3.1",
+    "aiosqlite==0.20.0",
+    "annotated-types==0.7.0",
+    "apscheduler==3.10.4",
+    "async-timeout==4.0.3",
+    "attrs==24.2.0",
+    "beautifulsoup4==4.12.3",
+    "cachetools==5.5.0",
+    "certifi==2024.8.30",
+    "charset-normalizer==3.3.2",
+    "colorama==0.4.6",
+    "et-xmlfile==1.1.0",
+    "frozenlist==1.4.1",
+    "google-auth==2.35.0",
+    "google-auth-oauthlib==1.2.1",
+    "gspread==6.1.2",
+    "idna==3.10",
+    "loguru==0.7.2",
+    "magic-filter==1.0.12",
+    "multidict==6.1.0",
+    "mypy>=1.15.0",
+    "oauthlib==3.2.2",
+    "openpyxl==3.1.5",
+    "pyasn1==0.6.1",
+    "pyasn1-modules==0.4.1",
+    "pydantic==2.9.2",
+    "pydantic-core==2.23.4",
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.26.0",
+    "pytz==2024.2",
+    "requests==2.32.3",
+    "requests-oauthlib==2.0.0",
+    "rsa==4.9",
+    "ruff>=0.11.4",
+    "six==1.16.0",
+    "soupsieve==2.6",
+    "types-pytz>=2025.2.0.20250326",
+    "typing-extensions==4.12.2",
+    "tzdata==2024.2",
+    "tzlocal==5.2",
+    "urllib3==2.2.3",
+    "win32-setctime==1.1.0",
+    "yarl==1.13.1",
+]
+
+[tool.ruff]
+target-version = "py311"
+fix = true
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    "build",
+    "tables",
+    "dist",
+    ".github",
+    ".dockerignore",
+    ".gitignore",
+    "coeffs_from_api.json",
+    "errors.log",
+    "loggs.log",
+    "pidor-of-the-day-5880592e7067.json"
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-first-party = ["wb_parser"]
+
+[tool.mypy]
+mypy_path = "wb_parser"
+strict = false  # Включает строгую проверку типов
+ignore_missing_imports = true  # Не проверять сторонние библиотеки
+warn_unused_ignores = true  # Предупреждать об игнорируемых аннотациях
+warn_redundant_casts = true  # Предупреждать о ненужных `cast()`
+disallow_untyped_defs = false  # Запрещает функции без аннотации типов
+disable_error_code = ["union-attr", "import-untyped"]
+
+
+
+[mypy-paswords]
+disable_error_code = ["import-untyped", "module-name"]

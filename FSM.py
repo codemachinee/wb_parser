@@ -1,5 +1,5 @@
 # Импортируем необходимые классы из aiogram
-from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.state import State, StatesGroup
 
 
 # Определяем класс для состояния message

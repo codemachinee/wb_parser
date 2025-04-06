@@ -1,5 +1,5 @@
-from sys import stdin
 from copy import deepcopy
+from sys import stdin
 
 
 class MatrixError(BaseException):

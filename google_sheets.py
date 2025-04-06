@@ -1,14 +1,15 @@
 # библиотека работы с гугл таблицами
+# библиотека проверки даты
+from datetime import datetime
+
 import gspread
+import pytz
 from loguru import logger
 
-from passwords import *
-admin_account = admin_id
-# библиотека проверки даты
-from datetime import *
-import pytz
-moscow_tz = pytz.timezone('Europe/Moscow')
+from passwords import admin_id, loggs_acc
 
+moscow_tz = pytz.timezone('Europe/Moscow')
+admin_account = admin_id
 
 class clients_base:  # класс базы данных
 
