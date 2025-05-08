@@ -106,13 +106,12 @@ async def callbacks(callback: CallbackQuery, bot, state: FSMContext):
     elif callback.data == 'PREMIATO':
         mes = await bot.edit_message_text(text='Пожалуйста выберите причину обращения', chat_id=callback.message.chat.id,
                                           message_id=callback.message.message_id, reply_markup=kb_choice_reasons)
-        if await db.search_in_table(callback.message.chat.id) is not False:
-            data_from_database = await db.search_in_table(callback.message.chat.id)
-            if data_from_database is not False:
-                if data_from_database[1][0][4] >= 4:
-                    await bot.edit_message_text(text='Превышен дневной лимит обращений.', chat_id=callback.message.chat.id,
-                                                message_id=mes.message_id)
-                    pass
+        data_from_database = await db.search_in_table(callback.message.chat.id)
+        if data_from_database is not False:
+            if data_from_database[1][0][4] >= 4:
+                await bot.edit_message_text(text='Превышен дневной лимит обращений.', chat_id=callback.message.chat.id,
+                                            message_id=mes.message_id)
+                pass
             else:
                 await db.update_table(telegram_id=callback.message.chat.id, update_tovar='Сухой корм Premeato')
         else:

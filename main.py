@@ -16,7 +16,7 @@ from FSM import step_message
 from functions import sheduler_block_value
 from google_sheets import clients_base
 from keyboards import kb1, kb_choice_reasons, kb_choice_tovar
-from passwords import admin_id, admins_list, group_id, lemonade, loggs_acc
+from passwords import admin_id, admins_list, group_id, lemonade, loggs_acc, codemashine_test
 from salute import Artur, save_audio
 from wb_api import parse_date
 
@@ -35,8 +35,8 @@ logger.add(
 )
 
 
-token = lemonade
-# token = codemashine_test
+# token = lemonade
+token = codemashine_test
 
 bot = Bot(token=token)
 dp = Dispatcher()
@@ -318,8 +318,8 @@ async def main():
     scheduler = AsyncIOScheduler()
     scheduler.add_job(db.delete_all_users, "cron", day_of_week='mon-sun', hour=00)
     # scheduler.add_job(db.delete_all_users, trigger="interval", seconds=15)
-    scheduler.add_job(send_news, trigger="interval", minutes=10, misfire_grace_time=60, coalesce=True)
-    scheduler.add_job(search_warehouses, trigger="interval", minutes=4, misfire_grace_time=60, coalesce=True)
+    # scheduler.add_job(send_news, trigger="interval", minutes=10, misfire_grace_time=60, coalesce=True)
+    # scheduler.add_job(search_warehouses, trigger="interval", minutes=4, misfire_grace_time=60, coalesce=True)
     # scheduler.add_job(send_news, "cron", day_of_week='mon-sun', hour=14, minute=33, misfire_grace_time=60, coalesce=True)
     scheduler.start()
     await dp.start_polling(bot)
